@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:planvisitas_grupohbf/screens/splash_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:planvisitas_grupohbf/screens/login.dart';
 
-import 'Login/login.dart';
-
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        textTheme: GoogleFonts.latoTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
+      title: 'Flutter Login UI',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(), //  Tema Claro
-//      theme: ThemeData.dark(), // Tema Obscuro
-      home: SplashScreen(),
+      home: LoginScreen(),
     );
   }
 }
