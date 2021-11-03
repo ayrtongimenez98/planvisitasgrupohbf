@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadas.dart';
+import 'package:planvisitas_grupohbf/screens/visitas/visitasPorMarcar.dart';
 import 'package:planvisitas_grupohbf/sidenav/sidenav.dart';
 
 class Dashboard extends StatefulWidget {
@@ -45,8 +47,8 @@ class _DashboardState extends State<Dashboard> {
           ),
           body: TabBarView(
             children: [
-              Container(),
-              Container(),
+              VisitasAMarcarPage(),
+              VisitasMarcadasPage(),
             ],
           ),
         ),

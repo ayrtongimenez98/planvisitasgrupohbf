@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/session-info.dart';
+import 'package:planvisitas_grupohbf/screens/clientes/listaClientes.dart';
 import 'package:planvisitas_grupohbf/screens/login.dart';
 
 class SideMenu extends StatefulWidget {
@@ -11,13 +15,20 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
+  SessionBloc _sessionBloc;
   SessionInfo session = defaultSession;
-  String name = "Lucia Galeano", phoneNumber = "";
+
+  String name = "Lucia Galeano", phoneNumber = "", initials = "";
 
   @override
   void initState() {
-    setState(() {});
     super.initState();
+    _sessionBloc = BlocProvider.of<GlobalBloc>(context).sessionBloc;
+    session = _sessionBloc.currentSession;
+    setState(() {
+      name = session.Nombre;
+      initials = getInitials(name);
+    });
   }
 
   @override
@@ -31,7 +42,7 @@ class _SideMenuState extends State<SideMenu> {
                 UserAccountsDrawerHeader(
                   decoration: BoxDecoration(color: Color(0xFF74CCBB)),
                   accountName: Text(
-                    "Lucia Galeano",
+                    name,
                     style:
                         TextStyle(fontWeight: FontWeight.w500, fontSize: 15.0),
                   ),
@@ -40,9 +51,9 @@ class _SideMenuState extends State<SideMenu> {
                     style:
                         TextStyle(fontWeight: FontWeight.w500, fontSize: 15.0),
                   ),
-                  currentAccountPicture: const CircleAvatar(
+                  currentAccountPicture: CircleAvatar(
                     backgroundColor: Colors.white,
-                    child: Text("LG",
+                    child: Text(initials,
                         style:
                             TextStyle(color: Color(0xFF74CCBB), fontSize: 30)),
                   ),
@@ -50,7 +61,10 @@ class _SideMenuState extends State<SideMenu> {
                 ListTile(
                   leading: Icon(Icons.assignment_ind),
                   title: Text("Clientes", style: TextStyle(fontSize: 15.0)),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ListaClientes()));
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.history),
@@ -105,4 +119,14 @@ class _SideMenuState extends State<SideMenu> {
       ),
     );
   }
+}
+
+String getInitials(string) {
+  var names = string.split(' '),
+      initials = names[0].substring(0, 1).toUpperCase();
+
+  if (names.length > 1) {
+    initials += names[names.length - 1].substring(0, 1).toUpperCase();
+  }
+  return initials;
 }

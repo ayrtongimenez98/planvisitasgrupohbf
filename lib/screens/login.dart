@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/screens/dashboard.dart';
 import 'package:planvisitas_grupohbf/utilities/constants.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,12 +14,23 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _rememberMe = false;
-
+  final myControllerUser = TextEditingController();
+  final myControllerPass = TextEditingController();
   bool passwordVisible = false;
-
+  SessionBloc _sessionBloc;
   @override
   void initState() {
+    super.initState();
+    _sessionBloc = BlocProvider.of<GlobalBloc>(context).sessionBloc;
     passwordVisible = false;
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myControllerUser.dispose();
+    myControllerPass.dispose();
+    super.dispose();
   }
 
   Widget _buildEmailTF() {
@@ -24,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         TextFormField(
+          controller: myControllerUser,
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -53,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         TextFormField(
+          controller: myControllerPass,
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -108,9 +124,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
         child: Center(
             child: FlatButton(
-      onPressed: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Dashboard()));
+      onPressed: () async {
+        var user = myControllerUser.text;
+        var pass = myControllerPass.text;
+        var resultado = await _sessionBloc.login(user, pass);
+        if (resultado) {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Dashboard()));
+        } else {}
       },
       padding: EdgeInsets.all(16),
       color: Color(0xFF8C44C0),
