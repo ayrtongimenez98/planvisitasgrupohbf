@@ -1,79 +1,59 @@
 class PlanSemanal {
   final int PlanSemanalId;
-  final int NroSemana;
   final String Periodo;
-  final String DiaSemana;
   final int VendedorId;
   final String NombreVendedor;
-  final int SucursalId;
+  final String SucursalId;
   final String SucursalDireccion;
   final String SucursalCiudad;
-  final int CodigoJefe;
-  final String NombreJefe;
-  final int Cantidad;
-  final int ObjetivoVisita;
   final String Cliente_Cod;
   final String Cliente_RazonSocial;
   final DateTime PlanSemanal_Horario;
+  final String Estado;
 
   PlanSemanal(
-      {this.Cantidad,
-      this.Cliente_Cod,
+      {this.Cliente_Cod,
       this.Cliente_RazonSocial,
-      this.CodigoJefe,
-      this.DiaSemana,
-      this.NombreJefe,
       this.NombreVendedor,
-      this.NroSemana,
-      this.ObjetivoVisita,
       this.Periodo,
       this.PlanSemanalId,
       this.PlanSemanal_Horario,
       this.SucursalCiudad,
       this.SucursalDireccion,
       this.SucursalId,
-      this.VendedorId});
+      this.VendedorId,
+      this.Estado});
 
   factory PlanSemanal.fromJson(dynamic json) {
     return PlanSemanal(
-      Cantidad: json["Cantidad"] as int,
-      Cliente_Cod: json["Cliente_Cod"] as String,
-      Cliente_RazonSocial: json["Cliente_RazonSocial"] as String,
+      Cliente_Cod: json["CodCliente"] as String,
+      Estado: json["PlanSemanal_Estado"] as String,
+      Cliente_RazonSocial: json["Cliente"] as String,
       PlanSemanal_Horario: json['PlanSemanal_Horario'] != null
           ? DateTime.parse(json['PlanSemanal_Horario'])
           : null,
-      CodigoJefe: json["CodigoJefe"] as int,
-      DiaSemana: json["DiaSemana"] as String,
-      NombreJefe: json["NombreJefe"] as String,
-      NombreVendedor: json["NombreVendedor"] as String,
-      NroSemana: json["NroSemana"] as int,
-      ObjetivoVisita: json["ObjetivoVisita"] as int,
+      NombreVendedor: json["Vendedor"] as String,
       Periodo: json["Periodo"] as String,
-      PlanSemanalId: json["PlanSemanalId"] as int,
-      SucursalCiudad: json["SucursalCiudad"] as String,
-      SucursalDireccion: json["SucursalDireccion"] as String,
-      SucursalId: json["SucursalId"] as int,
-      VendedorId: json["VendedorId"] as int,
+      PlanSemanalId: json["PlanSemanal_Id"] as int,
+      SucursalCiudad: json["Ciudad"] as String,
+      SucursalDireccion: json["Direccion"] as String,
+      SucursalId: json["Sucursal_Id"] as String,
+      VendedorId: json["Vendedor_Id"] as int,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "Cantidad": Cantidad,
-      "Cliente_Cod": Cliente_Cod,
-      "Cliente_RazonSocial": Cliente_RazonSocial,
-      "CodigoJefe": CodigoJefe,
-      "DiaSemana": DiaSemana,
-      "NombreJefe": NombreJefe,
-      "NombreVendedor": NombreVendedor,
-      "NroSemana": NroSemana,
-      "ObjetivoVisita": ObjetivoVisita,
+      "CodCliente": Cliente_Cod,
+      "Cliente": Cliente_RazonSocial,
+      "Vendedor": NombreVendedor,
       "Periodo": Periodo,
-      "PlanSemanalId": PlanSemanalId,
-      "SucursalCiudad": SucursalCiudad,
-      "SucursalDireccion": SucursalDireccion,
-      "SucursalId": SucursalId,
-      "VendedorId": VendedorId,
+      "PlanSemanal_Id": PlanSemanalId,
+      "Ciudad": SucursalCiudad,
+      "Direccion": SucursalDireccion,
+      "Sucursal_Id": SucursalId,
+      "Vendedor_Id": VendedorId,
+      "PlanSemanal_Estado": Estado,
       // ignore: prefer_null_aware_operators
       'PlanSemanal_Horario': PlanSemanal_Horario == null
           ? null
@@ -83,19 +63,14 @@ class PlanSemanal {
 }
 
 PlanSemanal defaultPlan = PlanSemanal(
-    Cantidad: null,
     Cliente_Cod: null,
     Cliente_RazonSocial: null,
-    CodigoJefe: null,
-    DiaSemana: null,
-    NombreJefe: null,
     NombreVendedor: null,
-    NroSemana: null,
-    ObjetivoVisita: null,
     Periodo: null,
     PlanSemanalId: null,
     PlanSemanal_Horario: null,
     SucursalCiudad: null,
     SucursalDireccion: null,
     SucursalId: null,
-    VendedorId: null);
+    VendedorId: null,
+    Estado: null);

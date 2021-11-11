@@ -8,6 +8,7 @@ import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:planvisitas_grupohbf/screens/clientes/listaClientes.dart';
 import 'package:planvisitas_grupohbf/screens/login.dart';
+import 'package:planvisitas_grupohbf/screens/plansemanal/plan_semanal.dart';
 
 class SideMenu extends StatefulWidget {
   @override
@@ -74,7 +75,10 @@ class _SideMenuState extends State<SideMenu> {
                 ListTile(
                   leading: Icon(Icons.timeline),
                   title: Text("Plan Semanal"),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => PlanSemanalPage()));
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.assessment),

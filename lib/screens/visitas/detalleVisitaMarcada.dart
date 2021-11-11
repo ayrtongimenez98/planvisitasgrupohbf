@@ -47,7 +47,7 @@ class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
         });
       });
       _googleMapsServices
-          .getDistance(origen, destination, "-25.2658337%2C-57.5717946")
+          .getDistance(origen, destination, "-25.2658337%2C-57.5717946", "")
           .then((f) {
         setState(() {
           distance = f;

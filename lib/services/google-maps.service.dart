@@ -17,9 +17,9 @@ class GoogleMapsServices {
   }
 
   Future<DistanceMatrix> getDistance(
-      LatLng l1, LatLng l2, String waypoints) async {
+      LatLng l1, LatLng l2, String waypoints, String destino) async {
     String url =
-        "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${l1.latitude},${l1.longitude}&destinations=${l2.latitude},${l2.longitude}&mode=driving&language=es-419&key=$apiKey";
+        "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${l1.latitude},${l1.longitude}&destinations=${destino.replaceAll("E/", "esq ")}&mode=driving&language=es-419&key=$apiKey";
     http.Response response = await http.get(Uri.parse(url));
     Map values = jsonDecode(response.body);
     return DistanceMatrix.fromJson(values);

@@ -2,9 +2,13 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/detalleVisitaPorMarcar.dart';
+import 'package:planvisitas_grupohbf/services/hoja-de-ruta/hoja-de-ruta.service.dart';
+import 'package:intl/intl.dart';
 
 class VisitasAMarcarPage extends StatefulWidget {
   @override
@@ -16,8 +20,9 @@ class VisitasAMarcarPage extends StatefulWidget {
 class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     with WidgetsBindingObserver {
   List<PlanSemanal> planes = [];
-
+  PlanSemanalBloc _planSemanalBloc;
   bool refresh = true;
+  StreamSubscription planSemanalSubscription;
 
   bool activeOrder = false;
   bool _isConnected = false;
@@ -26,6 +31,15 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
   @override
   void initState() {
     super.initState();
+
+    _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
+    planes = _planSemanalBloc.currentList;
+    _planSemanalBloc.getPlanDia();
+    planSemanalSubscription = _planSemanalBloc.planStream.listen((data) async {
+      setState(() {
+        planes = data;
+      });
+    });
 
     Connectivity().onConnectivityChanged.listen((connectionResult) {
       _isConnected = connectionResult != ConnectivityResult.none;
@@ -43,6 +57,7 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
 
   @override
   dispose() {
+    planSemanalSubscription.cancel();
     super.dispose();
   }
 
@@ -106,7 +121,7 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.all(8),
-            itemCount: 2,
+            itemCount: planes?.length,
             itemBuilder: (_, index) {
               return Card(
                 borderOnForeground: true,
@@ -122,8 +137,12 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text("27/10/2021", style: TextStyle(fontSize: 20)),
-                            Text("10:00", style: TextStyle(fontSize: 20))
+                            Text(
+                                "${new DateFormat('dd/MM/yyyy').format(planes[index].PlanSemanal_Horario.toLocal())}",
+                                style: TextStyle(fontSize: 20)),
+                            Text(
+                                "${new DateFormat('HH:mm').format(planes[index].PlanSemanal_Horario.toLocal())}",
+                                style: TextStyle(fontSize: 20))
                           ],
                         ),
                       ),
@@ -134,7 +153,8 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                             Icon(Icons.map),
                             Flexible(
                               child: Padding(
-                                child: Text("Avenida Caaguazu c/ Calle Colon"),
+                                child:
+                                    Text("${planes[index].SucursalDireccion}"),
                                 padding: EdgeInsets.only(left: 10),
                               ),
                             )
@@ -148,7 +168,8 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                             Icon(Icons.format_list_bulleted),
                             Padding(
                               padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                              child: Text('BIGGIE EXPRESS'),
+                              child:
+                                  Text("${planes[index].Cliente_RazonSocial}"),
                             )
                           ],
                         ),
@@ -181,8 +202,9 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                             onPressed: () {
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => VisitasAMarcarViewPage(
-                                        visitasAMarcar: PlanSemanal(),
-                                        visitasAMarcarId: 0,
+                                        visitasAMarcar: planes[index],
+                                        visitasAMarcarId:
+                                            planes[index].PlanSemanalId,
                                       )));
                             },
                             color: Colors.white,

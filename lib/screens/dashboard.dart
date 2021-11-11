@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadas.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasPorMarcar.dart';
 import 'package:planvisitas_grupohbf/sidenav/sidenav.dart';
@@ -11,11 +14,13 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   bool _rememberMe = false;
-
+  PlanSemanalBloc _planSemanalBloc;
   bool passwordVisible = false;
 
   @override
   void initState() {
+    super.initState();
+    _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
     passwordVisible = false;
   }
 
@@ -31,7 +36,9 @@ class _DashboardState extends State<Dashboard> {
             actions: <Widget>[
               IconButton(
                 icon: const Icon(Icons.sync),
-                onPressed: () {},
+                onPressed: () async {
+                  await _planSemanalBloc.getPlanDia();
+                },
               )
             ],
             bottom: const TabBar(

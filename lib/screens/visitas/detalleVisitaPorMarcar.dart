@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:planvisitas_grupohbf/models/distance-matrix.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
@@ -47,7 +48,8 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
         });
       });
       _googleMapsServices
-          .getDistance(origen, destination, "-25.2658337%2C-57.5717946")
+          .getDistance(origen, destination, "-25.2658337%2C-57.5717946",
+              widget.visitasAMarcar.SucursalDireccion)
           .then((f) {
         setState(() {
           distance = f;
@@ -160,7 +162,7 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
                           ? Container(
                               child: CachedNetworkImage(
                                 imageUrl:
-                                    "https://maps.googleapis.com/maps/api/staticmap?center=Biggie+Ñemby&zoom=15&scale=1&size=600x300&maptype=roadmap&key=AIzaSyChUnqJMokZkBnZYlWhwsDbg2SPk2eWP5c&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0xff0000%7Clabel:1%7CParaguay",
+                                    "https://maps.googleapis.com/maps/api/staticmap?center=${widget.visitasAMarcar.SucursalDireccion} Paraguay&zoom=15&scale=1&size=600x300&maptype=roadmap&key=AIzaSyChUnqJMokZkBnZYlWhwsDbg2SPk2eWP5c&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0xff0000%7Clabel:1%7CParaguay",
                               ),
                             )
                           : Center(
@@ -190,7 +192,7 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
                                   Container(
                                     width: 180,
                                     child: Text(
-                                      "BIGGIE EXPRESS",
+                                      "${widget.visitasAMarcar.Cliente_RazonSocial}",
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 8,
                                     ),
@@ -210,7 +212,7 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
                                   Container(
                                     width: 180,
                                     child: Text(
-                                      "Avenida Caaguazu c/ Calle Colon - Ñemby",
+                                      "${widget.visitasAMarcar.SucursalDireccion} - ${widget.visitasAMarcar.SucursalCiudad}",
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 8,
                                     ),
@@ -285,29 +287,12 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
                                     MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text("Objetivo: ",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline6),
-                                  Text("Reposición",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle1),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
                                   Text("Hora Planeada: ",
                                       style: Theme.of(context)
                                           .textTheme
                                           .headline6),
-                                  Text("10:00",
+                                  Text(
+                                      "${new DateFormat('HH:mm').format(widget.visitasAMarcar.PlanSemanal_Horario.toLocal())}",
                                       style: Theme.of(context)
                                           .textTheme
                                           .subtitle1),
