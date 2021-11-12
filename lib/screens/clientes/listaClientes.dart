@@ -37,9 +37,13 @@ class _ListaClientesState extends State<ListaClientes> {
   int total = 0;
   int take = 10;
 
+  bool loading = false;
+
   @override
   void initState() {
+    loading = true;
     super.initState();
+
     _searchQuery = new TextEditingController();
     service = new ClienteService();
     service
@@ -48,6 +52,7 @@ class _ListaClientesState extends State<ListaClientes> {
         .then((value) => {
               setState(() {
                 _clientes = value;
+                loading = false;
               })
             });
   }
@@ -174,12 +179,15 @@ class _ListaClientesState extends State<ListaClientes> {
       style: const TextStyle(color: Colors.white, fontSize: 16.0),
       onChanged: updateSearchQuery,
       onSubmitted: (text) {
+        setState(() {
+          loading = true;
+        });
         service.traerClientesAsignados(filtro: text).then((value) => {
               setState(() {
                 index = 0;
                 total = value.CantidadTotal;
                 _clientes = value;
-                _refreshController.refreshCompleted();
+                loading = false;
               })
             });
       },
@@ -222,47 +230,56 @@ class _ListaClientesState extends State<ListaClientes> {
         controller: _refreshController,
         onRefresh: _onRefresh,
         onLoading: _onLoading,
-        child: ListView.builder(
-          itemBuilder: (c, i) => Card(
-              child: ListTile(
-            onTap: () {
-              var plan = new PlanSemanal(
-                  Cliente_Cod: _clientes.Listado[i].Cliente_Cod,
-                  Cliente_RazonSocial: _clientes.Listado[i].Cliente_RazonSocial,
-                  Estado: "N",
-                  NombreVendedor: null,
-                  Periodo: null,
-                  PlanSemanalId: 0,
-                  PlanSemanal_Horario: new DateTime.now(),
-                  SucursalCiudad: _clientes.Listado[i].SucursalCiudad,
-                  SucursalDireccion: _clientes.Listado[i].SucursalDireccion,
-                  SucursalId: _clientes.Listado[i].SucursalId,
-                  VendedorId: 0);
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => VisitasAMarcarViewPage(
-                        visitasAMarcar: plan,
-                        visitasAMarcarId: plan.PlanSemanalId,
-                      )));
-            },
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-            leading: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text("${_clientes.Listado[i].Cantidad_Visitas}",
-                  style: TextStyle(color: Color(0xFF74CCBB), fontSize: 30)),
-            ),
-            title: Text("${_clientes.Listado[i].Cliente_RazonSocial}"),
-            subtitle: Text("${_clientes.Listado[i].SucursalDireccion}"),
-            trailing: Icon(
-              Icons.location_on,
-              color: Colors.pink,
-              size: 24.0,
-              semanticLabel: 'Text to announce in accessibility modes',
-            ),
-          )),
-          itemExtent: 100.0,
-          itemCount: _clientes.Listado.length,
-        ),
+        child: loading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF74CCBB),
+                ),
+              )
+            : ListView.builder(
+                itemBuilder: (c, i) => Card(
+                    child: ListTile(
+                  onTap: () {
+                    var plan = new PlanSemanal(
+                        Cliente_Cod: _clientes.Listado[i].Cliente_Cod,
+                        Cliente_RazonSocial:
+                            _clientes.Listado[i].Cliente_RazonSocial,
+                        Estado: "N",
+                        NombreVendedor: null,
+                        Periodo: null,
+                        PlanSemanalId: 0,
+                        PlanSemanal_Horario: new DateTime.now(),
+                        SucursalCiudad: _clientes.Listado[i].SucursalCiudad,
+                        SucursalDireccion:
+                            _clientes.Listado[i].SucursalDireccion,
+                        SucursalId: _clientes.Listado[i].SucursalId,
+                        VendedorId: 0);
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => VisitasAMarcarViewPage(
+                              visitasAMarcar: plan,
+                              visitasAMarcarId: plan.PlanSemanalId,
+                            )));
+                  },
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Text("${_clientes.Listado[i].Cantidad_Visitas}",
+                        style:
+                            TextStyle(color: Color(0xFF74CCBB), fontSize: 30)),
+                  ),
+                  title: Text("${_clientes.Listado[i].Cliente_RazonSocial}"),
+                  subtitle: Text("${_clientes.Listado[i].SucursalDireccion}"),
+                  trailing: Icon(
+                    Icons.location_on,
+                    color: Colors.pink,
+                    size: 24.0,
+                    semanticLabel: 'Text to announce in accessibility modes',
+                  ),
+                )),
+                itemExtent: 100.0,
+                itemCount: _clientes.Listado.length,
+              ),
       ),
     );
   }

@@ -46,7 +46,7 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
   DateTime selectedDateHasta = DateTime.now();
   TextEditingController dateinputDesde = TextEditingController();
   TextEditingController dateinputHasta = TextEditingController();
-
+  bool loading = false;
   @override
   void initState() {
     String formattedDateDesde =
@@ -58,8 +58,10 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
     super.initState();
     _searchQuery = new TextEditingController();
     service = new HojaRutaService();
+    loading = true;
     service.traerPlanes(selectedDateDesde, selectedDateHasta).then((value) => {
           setState(() {
+            loading = false;
             _planes = value;
           })
         });
@@ -184,6 +186,9 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
       style: const TextStyle(color: Colors.white, fontSize: 16.0),
       onChanged: updateSearchQuery,
       onSubmitted: (text) {
+        setState(() {
+          loading = true;
+        });
         service
             .traerPlanes(selectedDateDesde, selectedDateHasta, filtro: text)
             .then((value) => {
@@ -191,7 +196,7 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
                     index = 0;
                     total = value.CantidadTotal;
                     _planes = value;
-                    _refreshController.loadComplete();
+                    loading = false;
                   })
                 });
       },
@@ -359,108 +364,118 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
         controller: _refreshController,
         onRefresh: _onRefresh,
         onLoading: _onLoading,
-        child: ListView.builder(
-          itemBuilder: (c, i) => Card(
-            borderOnForeground: true,
-            clipBehavior: Clip.hardEdge,
-            color: Colors.white,
-            child: Container(
-              width: double.maxFinite,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: loading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF74CCBB),
+                ),
+              )
+            : ListView.builder(
+                itemBuilder: (c, i) => Card(
+                  borderOnForeground: true,
+                  clipBehavior: Clip.hardEdge,
+                  color: Colors.white,
+                  child: Container(
+                    width: double.maxFinite,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                            "${new DateFormat('dd/MM/yyyy').format(_planes.Listado[index].PlanSemanal_Horario.toLocal())}",
-                            style: TextStyle(fontSize: 20)),
-                        Text(
-                            "${new DateFormat('HH:mm').format(_planes.Listado[index].PlanSemanal_Horario.toLocal())}",
-                            style: TextStyle(fontSize: 20))
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.only(left: 15, bottom: 15),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(Icons.map),
-                        Flexible(
-                          child: Padding(
-                            child: Text(
-                                "${_planes.Listado[index].SucursalDireccion}"),
-                            padding: EdgeInsets.only(left: 10),
+                        Container(
+                          padding: EdgeInsets.all(15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                  "${new DateFormat('dd/MM/yyyy').format(_planes.Listado[i].PlanSemanal_Horario.toLocal())}",
+                                  style: TextStyle(fontSize: 20)),
+                              Text(
+                                  "${new DateFormat('HH:mm').format(_planes.Listado[i].PlanSemanal_Horario.toLocal())}",
+                                  style: TextStyle(fontSize: 20))
+                            ],
                           ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(left: 15, bottom: 15),
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.map),
+                              Flexible(
+                                child: Padding(
+                                  child: Text(
+                                      "${_planes.Listado[index].SucursalDireccion}"),
+                                  padding: EdgeInsets.only(left: 10),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(left: 15),
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.format_list_bulleted),
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                child: Text(
+                                    "${_planes.Listado[index].Cliente_RazonSocial}"),
+                              )
+                            ],
+                          ),
+                        ),
+                        ButtonBar(
+                          alignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            FlatButton(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Icon(Icons.check),
+                                  Text(_planes.Listado[index].Estado == "N"
+                                      ? "Aceptar"
+                                      : "Aceptado")
+                                ],
+                              ),
+                              onPressed: () {
+                                if (_planes.Listado[index].Estado == "N") {
+                                  showAlertDialog(context);
+                                }
+                              },
+                              color: Colors.white,
+                              textColor: _planes.Listado[index].Estado == "N"
+                                  ? Colors.green
+                                  : Colors.black45,
+                            ),
+                            FlatButton(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Icon(Icons.info_outline),
+                                  Text("  Info")
+                                ],
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        VisitasAMarcarViewPage(
+                                          visitasAMarcar:
+                                              _planes.Listado[index],
+                                          visitasAMarcarId: _planes
+                                              .Listado[index].PlanSemanalId,
+                                        )));
+                              },
+                              color: Colors.white,
+                              textColor: Colors.black,
+                            ),
+                          ],
                         )
                       ],
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.only(left: 15),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(Icons.format_list_bulleted),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: Text(
-                              "${_planes.Listado[index].Cliente_RazonSocial}"),
-                        )
-                      ],
-                    ),
-                  ),
-                  ButtonBar(
-                    alignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      FlatButton(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Icon(Icons.check),
-                            Text(_planes.Listado[index].Estado == "N"
-                                ? "Aceptar"
-                                : "Aceptado")
-                          ],
-                        ),
-                        onPressed: () {
-                          if (_planes.Listado[index].Estado == "N") {
-                            showAlertDialog(context);
-                          }
-                        },
-                        color: Colors.white,
-                        textColor: _planes.Listado[index].Estado == "N"
-                            ? Colors.green
-                            : Colors.black45,
-                      ),
-                      FlatButton(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Icon(Icons.info_outline),
-                            Text("  Info")
-                          ],
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => VisitasAMarcarViewPage(
-                                    visitasAMarcar: _planes.Listado[index],
-                                    visitasAMarcarId:
-                                        _planes.Listado[index].PlanSemanalId,
-                                  )));
-                        },
-                        color: Colors.white,
-                        textColor: Colors.black,
-                      ),
-                    ],
-                  )
-                ],
+                ),
+                itemCount: _planes.Listado.length,
               ),
-            ),
-          ),
-          itemCount: _planes.Listado.length,
-        ),
       ),
       floatingActionButton:
           Column(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -468,13 +483,16 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
           backgroundColor: Color(0xFF74CCBB),
           child: Icon(Icons.refresh),
           onPressed: () {
+            setState(() {
+              loading = true;
+            });
             service
                 .traerPlanes(selectedDateDesde, selectedDateHasta)
                 .then((value) => {
                       setState(() {
                         total = value.CantidadTotal;
                         _planes = value;
-                        _refreshController.refreshCompleted();
+                        loading = false;
                       })
                     });
           },

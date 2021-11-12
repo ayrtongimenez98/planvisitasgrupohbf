@@ -45,8 +45,11 @@ class _AgregarPlanPageState extends State<AgregarPlanPage> {
   int present = 0;
   int perPage = 15;
 
+  bool loading = false;
+
   @override
   void initState() {
+    loading = true;
     super.initState();
     service = new ClienteService();
     String formattedDateDesde = DateFormat('yyyy-MM-dd').format(selectedDate);
@@ -60,6 +63,7 @@ class _AgregarPlanPageState extends State<AgregarPlanPage> {
                 total = value.CantidadTotal;
                 _clientes = value;
                 _listaClientes.addAll(_clientes.Listado);
+                loading = false;
               })
             });
   }
@@ -237,6 +241,9 @@ class _AgregarPlanPageState extends State<AgregarPlanPage> {
                             labelText: 'Buscar sucursales',
                           ),
                           onSubmitted: (text) {
+                            setState(() {
+                              loading = true;
+                            });
                             service
                                 .traerClientesAsignados(filtro: text)
                                 .then((value) => {
@@ -245,6 +252,7 @@ class _AgregarPlanPageState extends State<AgregarPlanPage> {
                                         total = value.CantidadTotal;
                                         _clientes = value;
                                         _listaClientes = _clientes.Listado;
+                                        loading = false;
                                       })
                                     });
                           },
@@ -252,57 +260,67 @@ class _AgregarPlanPageState extends State<AgregarPlanPage> {
                       ),
                       Container(
                         height: 400,
-                        child: NotificationListener<ScrollNotification>(
-                          onNotification: (ScrollNotification scrollInfo) {
-                            if (scrollInfo.metrics.pixels ==
-                                scrollInfo.metrics.maxScrollExtent) {
-                              loadMore();
-                            }
-                          },
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: ((index * take) <= total)
-                                ? _listaClientes.length + 1
-                                : _listaClientes.length,
-                            itemBuilder: (context, i) {
-                              return (i == _listaClientes.length)
-                                  ? Container(
-                                      color: Color(0xFF74CCBB),
-                                      child: FlatButton(
-                                        child: Text("Cargar más.."),
-                                        onPressed: () {
-                                          loadMore();
-                                        },
-                                      ),
-                                    )
-                                  : Card(
-                                      child: ListTile(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 10),
-                                      leading: CircleAvatar(
-                                        backgroundColor: Colors.white,
-                                        child: Text(
-                                            "${_listaClientes[i].Cantidad_Visitas}",
-                                            style: TextStyle(
-                                                color: Color(0xFF74CCBB),
-                                                fontSize: 30)),
-                                      ),
-                                      title: Text(
-                                          "${_listaClientes[i].Cliente_RazonSocial}"),
-                                      subtitle: Text(
-                                          "${_listaClientes[i].SucursalDireccion}"),
-                                      trailing: Checkbox(
-                                        value: _listaClientes[i].Checked,
-                                        onChanged: (bool value) {
-                                          setState(() {
-                                            _listaClientes[i].Checked = value;
-                                          });
-                                        },
-                                      ),
-                                    ));
-                            },
-                          ),
-                        ),
+                        child: loading
+                            ? Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF74CCBB),
+                                ),
+                              )
+                            : NotificationListener<ScrollNotification>(
+                                onNotification:
+                                    (ScrollNotification scrollInfo) {
+                                  if (scrollInfo.metrics.pixels ==
+                                      scrollInfo.metrics.maxScrollExtent) {
+                                    loadMore();
+                                  }
+                                },
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: ((index * take) <= total)
+                                      ? _listaClientes.length + 1
+                                      : _listaClientes.length,
+                                  itemBuilder: (context, i) {
+                                    return (i == _listaClientes.length)
+                                        ? Container(
+                                            color: Color(0xFF74CCBB),
+                                            child: FlatButton(
+                                              child: Text("Cargar más.."),
+                                              onPressed: () {
+                                                loadMore();
+                                              },
+                                            ),
+                                          )
+                                        : Card(
+                                            child: ListTile(
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: 16.0,
+                                                    vertical: 10),
+                                            leading: CircleAvatar(
+                                              backgroundColor: Colors.white,
+                                              child: Text(
+                                                  "${_listaClientes[i].Cantidad_Visitas}",
+                                                  style: TextStyle(
+                                                      color: Color(0xFF74CCBB),
+                                                      fontSize: 30)),
+                                            ),
+                                            title: Text(
+                                                "${_listaClientes[i].Cliente_RazonSocial}"),
+                                            subtitle: Text(
+                                                "${_listaClientes[i].SucursalDireccion}"),
+                                            trailing: Checkbox(
+                                              value: _listaClientes[i].Checked,
+                                              onChanged: (bool value) {
+                                                setState(() {
+                                                  _listaClientes[i].Checked =
+                                                      value;
+                                                });
+                                              },
+                                            ),
+                                          ));
+                                  },
+                                ),
+                              ),
                       )
                     ],
                   )),

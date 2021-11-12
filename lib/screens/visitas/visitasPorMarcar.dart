@@ -24,12 +24,11 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
   bool refresh = true;
   StreamSubscription planSemanalSubscription;
 
-  bool activeOrder = false;
-  bool _isConnected = false;
-  ConnectivityResult _connectivityResult = ConnectivityResult.none;
+  bool loading = false;
 
   @override
   void initState() {
+    loading = true;
     super.initState();
 
     _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
@@ -37,21 +36,9 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     _planSemanalBloc.getPlanDia();
     planSemanalSubscription = _planSemanalBloc.planStream.listen((data) async {
       setState(() {
-        planes = data;
+        planes = data.where((element) => element.Estado == "N").toList();
+        loading = false;
       });
-    });
-
-    Connectivity().onConnectivityChanged.listen((connectionResult) {
-      _isConnected = connectionResult != ConnectivityResult.none;
-      if ((_connectivityResult == ConnectivityResult.wifi ||
-              _connectivityResult == ConnectivityResult.mobile) &&
-          (connectionResult == ConnectivityResult.wifi ||
-              connectionResult == ConnectivityResult.mobile)) {
-        _connectivityResult = connectionResult;
-        return;
-      }
-
-      _connectivityResult = connectionResult;
     });
   }
 
@@ -78,7 +65,7 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: Text("Confimar"),
-      content: Text("Desea confirmar visita?"),
+      content: Text("Desea confirmar entrada?"),
       actions: [okButton, cancelButton],
     );
 
@@ -91,135 +78,125 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     );
   }
 
-  Color renderHubStateColor() {
-    return Colors.green;
-  }
-
-  Widget renderHubState() {
-    return Text("Conectado");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(children: [
-        Container(
-          height: 30,
-          width: MediaQuery.of(context).size.width,
-          child: Padding(
-              child: Row(children: [
-                Icon(
-                  Icons.radio_button_checked,
-                  color: renderHubStateColor(),
-                  size: 15,
-                ),
-                renderHubState()
-              ]),
-              padding: EdgeInsets.only(top: 10, left: 10)),
-        ),
-        Divider(color: Colors.grey, height: 1),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(8),
-            itemCount: planes?.length,
-            itemBuilder: (_, index) {
-              return Card(
-                borderOnForeground: true,
-                clipBehavior: Clip.hardEdge,
-                color: Colors.white,
-                child: Container(
-                  width: double.maxFinite,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.all(15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: loading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF74CCBB),
+              ),
+            )
+          : Column(children: [
+              Divider(color: Colors.grey, height: 1),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: planes?.length,
+                  itemBuilder: (_, index) {
+                    return Card(
+                      borderOnForeground: true,
+                      clipBehavior: Clip.hardEdge,
+                      color: Colors.white,
+                      child: Container(
+                        width: double.maxFinite,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(
-                                "${new DateFormat('dd/MM/yyyy').format(planes[index].PlanSemanal_Horario.toLocal())}",
-                                style: TextStyle(fontSize: 20)),
-                            Text(
-                                "${new DateFormat('HH:mm').format(planes[index].PlanSemanal_Horario.toLocal())}",
-                                style: TextStyle(fontSize: 20))
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(left: 15, bottom: 15),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.map),
-                            Flexible(
-                              child: Padding(
-                                child:
-                                    Text("${planes[index].SucursalDireccion}"),
-                                padding: EdgeInsets.only(left: 10),
+                            Container(
+                              padding: EdgeInsets.all(15),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                      "${new DateFormat('dd/MM/yyyy').format(planes[index].PlanSemanal_Horario.toLocal())}",
+                                      style: TextStyle(fontSize: 20)),
+                                  Text(
+                                      "${new DateFormat('HH:mm').format(planes[index].PlanSemanal_Horario.toLocal())}",
+                                      style: TextStyle(fontSize: 20))
+                                ],
                               ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.only(left: 15, bottom: 15),
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.map),
+                                  Flexible(
+                                    child: Padding(
+                                      child: Text(
+                                          "${planes[index].SucursalDireccion}"),
+                                      padding: EdgeInsets.only(left: 10),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.only(left: 15),
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.format_list_bulleted),
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                    child: Text(
+                                        "${planes[index].Cliente_RazonSocial}"),
+                                  )
+                                ],
+                              ),
+                            ),
+                            ButtonBar(
+                              alignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                FlatButton(
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Icon(Icons.location_on),
+                                      Text("Visitar")
+                                    ],
+                                  ),
+                                  onPressed: () {
+                                    showAlertDialog(context);
+                                  },
+                                  color: Colors.white,
+                                  textColor: Color(0xFF8C44C0),
+                                ),
+                                FlatButton(
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Icon(Icons.info),
+                                      Text("  Datos")
+                                    ],
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                VisitasAMarcarViewPage(
+                                                  visitasAMarcar: planes[index],
+                                                  visitasAMarcarId:
+                                                      planes[index]
+                                                          .PlanSemanalId,
+                                                )));
+                                  },
+                                  color: Colors.white,
+                                  textColor: Colors.black,
+                                ),
+                              ],
                             )
                           ],
                         ),
                       ),
-                      Container(
-                        padding: EdgeInsets.only(left: 15),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.format_list_bulleted),
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                              child:
-                                  Text("${planes[index].Cliente_RazonSocial}"),
-                            )
-                          ],
-                        ),
-                      ),
-                      ButtonBar(
-                        alignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          FlatButton(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Icon(Icons.check),
-                                Text("Aceptar")
-                              ],
-                            ),
-                            onPressed: () {
-                              showAlertDialog(context);
-                            },
-                            color: Colors.white,
-                            textColor: Colors.green,
-                          ),
-                          FlatButton(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Icon(Icons.info_outline),
-                                Text("  Info")
-                              ],
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => VisitasAMarcarViewPage(
-                                        visitasAMarcar: planes[index],
-                                        visitasAMarcarId:
-                                            planes[index].PlanSemanalId,
-                                      )));
-                            },
-                            color: Colors.white,
-                            textColor: Colors.black,
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ]),
+              ),
+            ]),
     );
   }
 }

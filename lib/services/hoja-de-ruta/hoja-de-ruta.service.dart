@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:planvisitas_grupohbf/config/config.dart';
 import 'package:planvisitas_grupohbf/models/pagination-model.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
+import 'package:planvisitas_grupohbf/models/plan_semanal/plansemanal-upsert-model.dart';
+import 'package:planvisitas_grupohbf/models/shared/system-validation-model.dart';
 import 'package:planvisitas_grupohbf/services/http_helpers/http.service.dart';
 
 class HojaRutaService {
@@ -36,6 +38,22 @@ class HojaRutaService {
       if (response.statusCode == 200) {
         var result = json.decode(response.body) as dynamic;
         return PaginationPlanModel.fromJson(result);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
+  }
+
+  Future<SystemValidationModel> agregarPlanes(
+      List<PlanSemanalUpsertModel> lista) async {
+    try {
+      var bodyJson = lista.map((x) => x.toJson()).toList();
+      final response = await http.post(Uri.parse(endPoint), body: bodyJson);
+      if (response.statusCode == 200) {
+        var result = json.decode(response.body) as dynamic;
+        return SystemValidationModel.fromJson(result);
       } else {
         return null;
       }

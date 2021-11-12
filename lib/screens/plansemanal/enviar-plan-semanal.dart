@@ -10,10 +10,13 @@ import 'package:planvisitas_grupohbf/models/objetivovisita/objetivovisita-model.
 import 'package:planvisitas_grupohbf/models/pagination-model.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plansemanal-upsert-model.dart';
+import 'package:planvisitas_grupohbf/models/shared/system-validation-model.dart';
 import 'package:planvisitas_grupohbf/services/cliente/cliente.service.dart';
 import 'package:planvisitas_grupohbf/services/google-maps.service.dart';
+import 'package:planvisitas_grupohbf/services/hoja-de-ruta/hoja-de-ruta.service.dart';
 import 'package:planvisitas_grupohbf/services/objetivovisita/objetivovisita.service.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 class EnviarPlanPage extends StatefulWidget {
   final List<PlanSemanalUpsertModel> visitas;
@@ -35,8 +38,13 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
   List<TextEditingController> textEditingControllers = [];
 
   ObjetivoVisitaService objetivoService;
+  HojaRutaService hojaRutaService;
+
+  bool loading = false;
+
   @override
   void initState() {
+    loading = true;
     widget.visitas.forEach((element) {
       var textEditingController = TextEditingController(text: element.Hora);
       textEditingControllers.add(textEditingController);
@@ -44,18 +52,22 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
     super.initState();
 
     objetivoService = ObjetivoVisitaService();
+    hojaRutaService = HojaRutaService();
     objetivoService.listarObjetivos().then((value) => {
           setState(() {
             _objetivos = value.Listado;
+            loading = false;
           })
         });
   }
 
-  showAlertDialog(BuildContext context) {
+  showAlertDialog(BuildContext context, SystemValidationModel model) {
     // set up the button
     Widget okButton = FlatButton(
       child: Text("OK"),
-      onPressed: () async {},
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
     );
 
     Widget cancelButton = FlatButton(
@@ -67,9 +79,9 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
 
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("Confimar"),
-      content: Text("Desea confirmar la visita?"),
-      actions: [okButton, cancelButton],
+      title: Text(model.Success ? "Confirmado" : "Error"),
+      content: Text(model.Message),
+      actions: [okButton],
     );
 
     // show the dialog
@@ -81,6 +93,15 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
     );
   }
 
+  void guardar() async {
+    final ProgressDialog pr = ProgressDialog(context);
+    pr.show();
+    hojaRutaService.agregarPlanes(widget.visitas).then((value) async {
+      pr.hide();
+      showAlertDialog(context, value);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,7 +110,9 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.save),
-              onPressed: () async {},
+              onPressed: () async {
+                await guardar();
+              },
             )
           ],
           title: Text('Confirmar plan'),
@@ -174,7 +197,14 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
                       padding: const EdgeInsets.fromLTRB(10, 5, 5, 0),
                       width: 200,
                       child: _objetivos.length == 0
-                          ? Text("...")
+                          ? Container(
+                              margin: EdgeInsets.fromLTRB(80, 0, 80, 0),
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF74CCBB),
+                              ),
+                            )
                           : DropdownButton<ObjetivoVisitaModel>(
                               isExpanded: true,
                               value: _objetivos
