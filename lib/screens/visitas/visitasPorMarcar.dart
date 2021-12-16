@@ -2,13 +2,20 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/visitas-offline-bloc/visitas-offline.bloc.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
+import 'package:planvisitas_grupohbf/models/shared/system-validation-model.dart';
+import 'package:planvisitas_grupohbf/models/visitas/visita-upsert-model.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/detalleVisitaPorMarcar.dart';
 import 'package:planvisitas_grupohbf/services/hoja-de-ruta/hoja-de-ruta.service.dart';
 import 'package:intl/intl.dart';
+import 'package:planvisitas_grupohbf/services/visitas/visitas.service.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 class VisitasAMarcarPage extends StatefulWidget {
   @override
@@ -21,38 +28,126 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     with WidgetsBindingObserver {
   List<PlanSemanal> planes = [];
   PlanSemanalBloc _planSemanalBloc;
+  VisitasOfflineBloc visitasOfflineBloc;
   bool refresh = true;
   StreamSubscription planSemanalSubscription;
-
+  Location location = new Location();
   bool loading = false;
-
+  PermissionStatus _permissionGranted;
+  LocationData _locationData;
+  StreamSubscription connectivitySubscription;
+  var connectivity = false;
+  VisitasService visitasService;
   @override
   void initState() {
-    loading = true;
     super.initState();
+    location = new Location();
+    visitasService = VisitasService();
+    location.hasPermission().then((value) => _permissionGranted = value);
+    getLocation();
+    loading = true;
 
     _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
-    planes = _planSemanalBloc.currentList;
-    _planSemanalBloc.getPlanDia();
+    visitasOfflineBloc =
+        BlocProvider.of<GlobalBloc>(context).visitasOfflineBloc;
+    planes = _planSemanalBloc.currentList.Listado;
+    _planSemanalBloc.getPlanDiaLocal();
     planSemanalSubscription = _planSemanalBloc.planStream.listen((data) async {
       setState(() {
-        planes = data.where((element) => element.Estado == "N").toList();
+        planes =
+            data.Listado.where((element) => element.Estado == "N").toList();
         loading = false;
       });
+    });
+
+    Connectivity().checkConnectivity().then((data) {
+      if (data == ConnectivityResult.mobile ||
+          data == ConnectivityResult.wifi) {
+        connectivity = true;
+      } else {
+        connectivity = false;
+      }
+    });
+
+    connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen((connectionResult) {
+      if (connectionResult == ConnectivityResult.mobile ||
+          connectionResult == ConnectivityResult.wifi) {
+        connectivity = true;
+      } else {
+        connectivity = false;
+      }
+    });
+  }
+
+  getLocation() {
+    location.getLocation().then((value) async {
+      _locationData = value;
     });
   }
 
   @override
   dispose() {
-    planSemanalSubscription.cancel();
     super.dispose();
+    planSemanalSubscription.cancel();
+    connectivitySubscription.cancel();
   }
 
-  showAlertDialog(BuildContext context) {
+  showNoticeDialog(BuildContext context, SystemValidationModel model) {
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      },
+    );
+
+    Widget cancelButton = FlatButton(
+      child: Text("Cancelar"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(model.Success ? "Confirmado" : "Error"),
+      content: Text(model.Message),
+      actions: [okButton],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  showAlertDialog(BuildContext context, VisitaUpsertModel model) {
     // set up the button
     Widget okButton = FlatButton(
       child: Text("OK"),
-      onPressed: () async {},
+      onPressed: () async {
+        final ProgressDialog pr = ProgressDialog(context);
+        pr.show();
+        if (connectivity) {
+          visitasService.agregarEntrada(model).then((value) async {
+            pr.hide();
+            showNoticeDialog(context, value);
+          });
+        } else {
+          visitasOfflineBloc.agregarNuevaVisita(model).then((value) {
+            pr.hide();
+            showNoticeDialog(
+                context,
+                new SystemValidationModel(
+                    Success: true, Message: "Agregado con éxito sin conexión"));
+          });
+        }
+      },
     );
 
     Widget cancelButton = FlatButton(
@@ -159,7 +254,28 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                                     ],
                                   ),
                                   onPressed: () {
-                                    showAlertDialog(context);
+                                    var visita = new VisitaUpsertModel(
+                                        Ciudad: planes[index].SucursalCiudad,
+                                        Cliente:
+                                            planes[index].Cliente_RazonSocial,
+                                        Cliente_Cod: planes[index].Cliente_Cod,
+                                        Direccion:
+                                            planes[index].SucursalDireccion,
+                                        Estado_Id: 1,
+                                        Motivo_Id: 1,
+                                        Sucursal_Id: planes[index].SucursalId,
+                                        Vendedor_Id: 0,
+                                        Visita_fecha: new DateTime.now(),
+                                        Visita_Hora_Entrada: new DateTime.now(),
+                                        Visita_Hora_Salida: new DateTime.now(),
+                                        Visita_Id: 0,
+                                        Visita_Observacion: "",
+                                        Visita_Ubicacion_Entrada: _locationData !=
+                                                null
+                                            ? "${_locationData.latitude},${_locationData.longitude}"
+                                            : "",
+                                        Visita_Ubicacion_Salida: "");
+                                    showAlertDialog(context, visita);
                                   },
                                   color: Colors.white,
                                   textColor: Color(0xFF8C44C0),
@@ -174,14 +290,31 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                                     ],
                                   ),
                                   onPressed: () {
+                                    var plan = new VisitaUpsertModel(
+                                        Ciudad: planes[index].SucursalCiudad,
+                                        Cliente:
+                                            planes[index].Cliente_RazonSocial,
+                                        Cliente_Cod: planes[index].Cliente_Cod,
+                                        Direccion:
+                                            planes[index].SucursalDireccion,
+                                        Estado_Id: 1,
+                                        Motivo_Id: 1,
+                                        Sucursal_Id: planes[index].SucursalId,
+                                        Vendedor_Id: 0,
+                                        Visita_fecha: new DateTime.now(),
+                                        Visita_Hora_Entrada: new DateTime.now(),
+                                        Visita_Hora_Salida: new DateTime.now(),
+                                        Visita_Id: 0,
+                                        Visita_Observacion: "",
+                                        Visita_Ubicacion_Entrada: "",
+                                        Visita_Ubicacion_Salida: "");
                                     Navigator.of(context).push(
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 VisitasAMarcarViewPage(
-                                                  visitasAMarcar: planes[index],
+                                                  visitasAMarcar: plan,
                                                   visitasAMarcarId:
-                                                      planes[index]
-                                                          .PlanSemanalId,
+                                                      plan.Visita_Id,
                                                 )));
                                   },
                                   color: Colors.white,

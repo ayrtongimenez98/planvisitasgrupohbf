@@ -31,8 +31,6 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
   String dropdownValue = 'One';
   TimeOfDay selectedTime = TimeOfDay.now();
 
-  TextEditingController dateinput = TextEditingController();
-
   List<ObjetivoVisitaModel> _objetivos = [];
 
   List<TextEditingController> textEditingControllers = [];

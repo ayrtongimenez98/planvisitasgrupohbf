@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
@@ -9,6 +10,9 @@ import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:planvisitas_grupohbf/screens/clientes/listaClientes.dart';
 import 'package:planvisitas_grupohbf/screens/login.dart';
 import 'package:planvisitas_grupohbf/screens/plansemanal/plan_semanal.dart';
+import 'package:planvisitas_grupohbf/screens/sync/sincronizar-datos.dart';
+import 'package:planvisitas_grupohbf/screens/vencimiento/lista_vencimientos.dart';
+import 'package:planvisitas_grupohbf/screens/visitas/lista-visitas.dart';
 
 class SideMenu extends StatefulWidget {
   @override
@@ -19,11 +23,14 @@ class _SideMenuState extends State<SideMenu> {
   SessionBloc _sessionBloc;
   SessionInfo session = defaultSession;
 
+  final _storage = const FlutterSecureStorage();
+
   String name = "Lucia Galeano", phoneNumber = "", initials = "";
 
   @override
   void initState() {
     super.initState();
+
     _sessionBloc = BlocProvider.of<GlobalBloc>(context).sessionBloc;
     session = _sessionBloc.currentSession;
     setState(() {
@@ -70,7 +77,10 @@ class _SideMenuState extends State<SideMenu> {
                 ListTile(
                   leading: Icon(Icons.history),
                   title: Text("Historial de Visitas"),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ListaVisitasPage()));
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.timeline),
@@ -86,10 +96,28 @@ class _SideMenuState extends State<SideMenu> {
                   onTap: () {},
                 ),
                 ListTile(
+                  leading: Icon(Icons.sync),
+                  title: Text("Sincronizar"),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => SincronizarDatosPage()));
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.texture),
+                  title: Text("Vencimiento Productos"),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ListaVencimientosPage()));
+                  },
+                ),
+                ListTile(
                   leading: Icon(Icons.close),
                   title: Text("Cerrar sesión"),
                   onTap: () {
-                    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                    _storage.delete(key: "session").then((value) =>
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => LoginScreen())));
                   },
                 ),
               ],
@@ -111,7 +139,7 @@ class _SideMenuState extends State<SideMenu> {
                           child: Align(
                             alignment: Alignment.bottomLeft,
                             child: Text(
-                              ' v2.0.0-dev',
+                              ' v0.0.1-dev',
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),

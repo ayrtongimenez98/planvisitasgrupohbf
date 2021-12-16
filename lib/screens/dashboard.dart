@@ -4,6 +4,7 @@ import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.da
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadas.dart';
+import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadasOffline.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasPorMarcar.dart';
 import 'package:planvisitas_grupohbf/sidenav/sidenav.dart';
 
@@ -28,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: DefaultTabController(
-        length: 2,
+        length: 3,
         child: Scaffold(
           drawer: SideMenu(),
           appBar: AppBar(
@@ -37,7 +38,7 @@ class _DashboardState extends State<Dashboard> {
               IconButton(
                 icon: const Icon(Icons.sync),
                 onPressed: () async {
-                  await _planSemanalBloc.getPlanDia();
+                  await _planSemanalBloc.getPlanDiaServidor();
                 },
               )
             ],
@@ -47,6 +48,7 @@ class _DashboardState extends State<Dashboard> {
                   icon: Icon(Icons.assignment),
                 ),
                 Tab(icon: Icon(Icons.assignment_turned_in)),
+                Tab(icon: Icon(Icons.wifi_off_outlined)),
               ],
               indicatorColor: Color(0xFF8C44C0),
             ),
@@ -56,6 +58,7 @@ class _DashboardState extends State<Dashboard> {
             children: [
               VisitasAMarcarPage(),
               VisitasMarcadasPage(),
+              VisitasMarcadasOfflinePage()
             ],
           ),
         ),

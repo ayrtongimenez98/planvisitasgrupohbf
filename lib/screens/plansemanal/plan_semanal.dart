@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:planvisitas_grupohbf/models/cliente/cliente-model.dart';
 import 'package:planvisitas_grupohbf/models/pagination-model.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
+import 'package:planvisitas_grupohbf/models/visitas/visita-upsert-model.dart';
 import 'package:planvisitas_grupohbf/screens/plansemanal/agregar-nuevo-plan.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/detalleVisitaPorMarcar.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadas.dart';
@@ -402,7 +403,7 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
                               Flexible(
                                 child: Padding(
                                   child: Text(
-                                      "${_planes.Listado[index].SucursalDireccion}"),
+                                      "${_planes.Listado[i].SucursalDireccion}"),
                                   padding: EdgeInsets.only(left: 10),
                                 ),
                               )
@@ -410,65 +411,17 @@ class _PlanSemanalPageState extends State<PlanSemanalPage> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.only(left: 15),
+                          padding: EdgeInsets.only(left: 15, bottom: 15),
                           child: Row(
                             children: <Widget>[
                               Icon(Icons.format_list_bulleted),
                               Padding(
                                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                                 child: Text(
-                                    "${_planes.Listado[index].Cliente_RazonSocial}"),
+                                    "${_planes.Listado[i].Cliente_RazonSocial}"),
                               )
                             ],
                           ),
-                        ),
-                        ButtonBar(
-                          alignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            FlatButton(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(Icons.check),
-                                  Text(_planes.Listado[index].Estado == "N"
-                                      ? "Aceptar"
-                                      : "Aceptado")
-                                ],
-                              ),
-                              onPressed: () {
-                                if (_planes.Listado[index].Estado == "N") {
-                                  showAlertDialog(context);
-                                }
-                              },
-                              color: Colors.white,
-                              textColor: _planes.Listado[index].Estado == "N"
-                                  ? Colors.green
-                                  : Colors.black45,
-                            ),
-                            FlatButton(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(Icons.info_outline),
-                                  Text("  Info")
-                                ],
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        VisitasAMarcarViewPage(
-                                          visitasAMarcar:
-                                              _planes.Listado[index],
-                                          visitasAMarcarId: _planes
-                                              .Listado[index].PlanSemanalId,
-                                        )));
-                              },
-                              color: Colors.white,
-                              textColor: Colors.black,
-                            ),
-                          ],
                         )
                       ],
                     ),

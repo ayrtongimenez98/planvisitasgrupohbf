@@ -4,7 +4,7 @@ import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageHelper {
-  static final FlutterSecureStorage _storage = new FlutterSecureStorage();
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
   Future<SessionInfo> getSessionInfo() async {
     try {
       var value = await _storage?.read(key: "session");

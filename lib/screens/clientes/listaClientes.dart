@@ -1,11 +1,16 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:planvisitas_grupohbf/bloc/clientes-bloc/clientes.bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/cliente/cliente-model.dart';
 import 'package:planvisitas_grupohbf/models/pagination-model.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
+import 'package:planvisitas_grupohbf/models/visitas/visita-upsert-model.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/detalleVisitaPorMarcar.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadas.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasPorMarcar.dart';
@@ -32,11 +37,13 @@ class _ListaClientesState extends State<ListaClientes> {
   TextEditingController _searchQuery;
   bool _isSearching = false;
   String searchQuery = "";
-
+  ClientesBloc _clienteBloc;
+  bool refresh = true;
+  StreamSubscription clienteSubscription;
   int index = 0;
   int total = 0;
   int take = 10;
-
+  List<ClienteModel> listaFiltrada = [];
   bool loading = false;
 
   @override
@@ -45,16 +52,19 @@ class _ListaClientesState extends State<ListaClientes> {
     super.initState();
 
     _searchQuery = new TextEditingController();
-    service = new ClienteService();
-    service
-        .traerClientesAsignados(
-            filtro: searchQuery, skip: index * take, take: take)
-        .then((value) => {
-              setState(() {
-                _clientes = value;
-                loading = false;
-              })
-            });
+
+    _clienteBloc = BlocProvider.of<GlobalBloc>(context).clientesBloc;
+    _clientes = _clienteBloc.currentList;
+    _clienteBloc.getClientesLocal();
+    clienteSubscription = _clienteBloc.clienteStream.listen((data) async {
+      setState(() {
+        total = data.CantidadTotal;
+        _clientes = data;
+        listaFiltrada = data.Listado;
+        loading = false;
+        _refreshController.refreshCompleted();
+      });
+    });
   }
 
   void _stopSearching() {
@@ -75,32 +85,15 @@ class _ListaClientesState extends State<ListaClientes> {
 
   void _onRefresh() async {
     // monitor network fetch
-    service
-        .traerClientesAsignados(
-            filtro: searchQuery, skip: index * take, take: take)
-        .then((value) => {
-              setState(() {
-                total = value.CantidadTotal;
-                _clientes = value;
-                _refreshController.refreshCompleted();
-              })
-            });
-    // if failed,use refreshFailed()
+    _clienteBloc.getClientesServidor(
+        filtro: searchQuery, skip: index * take, take: take);
   }
 
   void _onLoading() async {
     if ((index + 1) * take < total) {
       index++;
-      service
-          .traerClientesAsignados(
-              filtro: searchQuery, skip: index * take, take: take)
-          .then((value) => {
-                setState(() {
-                  total = value.CantidadTotal;
-                  _clientes = value;
-                  _refreshController.loadComplete();
-                })
-              });
+      _clienteBloc.getClientesServidor(
+          filtro: searchQuery, skip: index * take, take: take);
     } else {
       _refreshController.loadComplete();
     }
@@ -147,6 +140,12 @@ class _ListaClientesState extends State<ListaClientes> {
     ];
   }
 
+  @override
+  dispose() {
+    clienteSubscription.cancel();
+    super.dispose();
+  }
+
   Widget _buildTitle(BuildContext context) {
     var horizontalTitleAlignment =
         Platform.isIOS ? CrossAxisAlignment.center : CrossAxisAlignment.start;
@@ -180,16 +179,18 @@ class _ListaClientesState extends State<ListaClientes> {
       onChanged: updateSearchQuery,
       onSubmitted: (text) {
         setState(() {
-          loading = true;
+          if (text.length > 0) {
+            listaFiltrada = listaFiltrada
+                .where((element) =>
+                    element.SucursalDireccion.toLowerCase()
+                        .contains(text.toLowerCase()) ||
+                    element.Cliente_RazonSocial.toLowerCase()
+                        .contains(text.toLowerCase()))
+                .toList();
+          } else {
+            listaFiltrada = _clientes.Listado;
+          }
         });
-        service.traerClientesAsignados(filtro: text).then((value) => {
-              setState(() {
-                index = 0;
-                total = value.CantidadTotal;
-                _clientes = value;
-                loading = false;
-              })
-            });
       },
     );
   }
@@ -203,83 +204,49 @@ class _ListaClientesState extends State<ListaClientes> {
         title: _isSearching ? _buildSearchField() : _buildTitle(context),
         actions: _buildActions(),
       ),
-      body: SmartRefresher(
-        enablePullDown: true,
-        enablePullUp: true,
-        header: WaterDropHeader(),
-        footer: CustomFooter(
-          builder: (BuildContext context, LoadStatus mode) {
-            Widget body;
-            if (mode == LoadStatus.idle) {
-              body = Text("Cargado.");
-            } else if (mode == LoadStatus.loading) {
-              body = CupertinoActivityIndicator();
-            } else if (mode == LoadStatus.failed) {
-              body = Text("Load Failed!Click retry!");
-            } else if (mode == LoadStatus.canLoading) {
-              body = Text("Estire para cargar más items.");
-            } else {
-              body = Text("No hay más datos.");
-            }
-            return Container(
-              height: 55.0,
-              child: Center(child: body),
-            );
+      body: ListView.builder(
+        itemBuilder: (c, i) => Card(
+            child: ListTile(
+          onTap: () {
+            var plan = new VisitaUpsertModel(
+                Cliente_Cod: listaFiltrada[i].Cliente_Cod,
+                Cliente: listaFiltrada[i].Cliente_RazonSocial,
+                Visita_Observacion: "",
+                Estado_Id: 1,
+                Motivo_Id: 1,
+                Visita_Id: 0,
+                Visita_fecha: new DateTime.now(),
+                Ciudad: listaFiltrada[i].SucursalCiudad,
+                Direccion: listaFiltrada[i].SucursalDireccion,
+                Sucursal_Id: listaFiltrada[i].SucursalId,
+                Vendedor_Id: 0,
+                Visita_Ubicacion_Entrada: "",
+                Visita_Ubicacion_Salida: "",
+                Visita_Hora_Entrada: new DateTime.now(),
+                Visita_Hora_Salida: new DateTime.now());
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => VisitasAMarcarViewPage(
+                      visitasAMarcar: plan,
+                      visitasAMarcarId: plan.Vendedor_Id,
+                    )));
           },
-        ),
-        controller: _refreshController,
-        onRefresh: _onRefresh,
-        onLoading: _onLoading,
-        child: loading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF74CCBB),
-                ),
-              )
-            : ListView.builder(
-                itemBuilder: (c, i) => Card(
-                    child: ListTile(
-                  onTap: () {
-                    var plan = new PlanSemanal(
-                        Cliente_Cod: _clientes.Listado[i].Cliente_Cod,
-                        Cliente_RazonSocial:
-                            _clientes.Listado[i].Cliente_RazonSocial,
-                        Estado: "N",
-                        NombreVendedor: null,
-                        Periodo: null,
-                        PlanSemanalId: 0,
-                        PlanSemanal_Horario: new DateTime.now(),
-                        SucursalCiudad: _clientes.Listado[i].SucursalCiudad,
-                        SucursalDireccion:
-                            _clientes.Listado[i].SucursalDireccion,
-                        SucursalId: _clientes.Listado[i].SucursalId,
-                        VendedorId: 0);
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => VisitasAMarcarViewPage(
-                              visitasAMarcar: plan,
-                              visitasAMarcarId: plan.PlanSemanalId,
-                            )));
-                  },
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Text("${_clientes.Listado[i].Cantidad_Visitas}",
-                        style:
-                            TextStyle(color: Color(0xFF74CCBB), fontSize: 30)),
-                  ),
-                  title: Text("${_clientes.Listado[i].Cliente_RazonSocial}"),
-                  subtitle: Text("${_clientes.Listado[i].SucursalDireccion}"),
-                  trailing: Icon(
-                    Icons.location_on,
-                    color: Colors.pink,
-                    size: 24.0,
-                    semanticLabel: 'Text to announce in accessibility modes',
-                  ),
-                )),
-                itemExtent: 100.0,
-                itemCount: _clientes.Listado.length,
-              ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+          leading: CircleAvatar(
+            backgroundColor: Colors.white,
+            child: Text("${listaFiltrada[i].Cantidad_Visitas}",
+                style: TextStyle(color: Color(0xFF74CCBB), fontSize: 30)),
+          ),
+          title: Text("${listaFiltrada[i].Cliente_RazonSocial}"),
+          subtitle: Text("${listaFiltrada[i].SucursalDireccion}"),
+          trailing: Icon(
+            Icons.location_on,
+            color: Colors.pink,
+            size: 24.0,
+            semanticLabel: 'Text to announce in accessibility modes',
+          ),
+        )),
+        itemExtent: 100.0,
+        itemCount: listaFiltrada.length,
       ),
     );
   }

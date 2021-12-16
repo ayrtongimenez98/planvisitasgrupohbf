@@ -3,6 +3,7 @@ import 'package:planvisitas_grupohbf/bloc/shared/bloc.dart';
 import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:planvisitas_grupohbf/services/authentication/login.service.dart';
 import 'package:planvisitas_grupohbf/services/storage/secure_storage_helper.service.dart';
+import 'package:planvisitas_grupohbf/services/storage/shared_preferences_helper.dart';
 
 class SessionBloc implements Bloc {
   LoginService _service = LoginService();
@@ -13,11 +14,16 @@ class SessionBloc implements Bloc {
   Stream<SessionInfo> get sessionStream => _sessionInfoController.stream;
 
   SessionBloc() {
-    getUser();
+    helper = new SecureStorageHelper();
   }
 
-  Future<void> getUser() async {
-    session = await helper.getSessionInfo();
+  Future<void> getUser({SessionInfo info}) async {
+    if (info != null) {
+      session = info;
+    } else {
+      session = await helper.getSessionInfo();
+    }
+
     await saveSession();
   }
 

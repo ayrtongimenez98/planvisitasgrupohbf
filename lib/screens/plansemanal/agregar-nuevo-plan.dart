@@ -408,8 +408,8 @@ class _AgregarPlanPageState extends State<AgregarPlanPage> {
         context: context,
         locale: const Locale('es', 'PY'),
         initialDate: selectedDate,
-        firstDate: DateTime(2010),
-        lastDate: DateTime(2025),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2100),
         builder: (BuildContext context, Widget child) {
           return Theme(
             data: ThemeData(

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc.dart';
 import 'package:planvisitas_grupohbf/models/pagination-model.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
@@ -9,26 +11,44 @@ import 'package:planvisitas_grupohbf/services/storage/secure_storage_helper.serv
 
 class PlanSemanalBloc implements Bloc {
   HojaRutaService _service = HojaRutaService();
-  List<PlanSemanal> lista = [];
+  PaginationPlanModel lista =
+      PaginationPlanModel(CantidadTotal: 0, Listado: []);
   SecureStorageHelper helper = new SecureStorageHelper();
-  List<PlanSemanal> get currentList => lista;
+  PaginationPlanModel get currentList => lista;
   final _planSemanalController =
-      StreamController<List<PlanSemanal>>.broadcast();
-  Stream<List<PlanSemanal>> get planStream => _planSemanalController.stream;
+      StreamController<PaginationPlanModel>.broadcast();
+  Stream<PaginationPlanModel> get planStream => _planSemanalController.stream;
+  final _storage = const FlutterSecureStorage();
 
-  SessionBloc() {
-    getPlanDia();
-  }
+  PlanSemanalBloc() {}
 
-  Future<List<PlanSemanal>> getPlanDia() async {
+  Future<void> getPlanDiaServidor() async {
     var model = await _service.traerPlanDelDia();
-    lista = model.Listado;
+    lista = model;
     _planSemanalController.add(lista);
+    guardarPlanesDelDia();
   }
 
   Future<PaginationPlanModel> getPlanes(DateTime desde, DateTime hasta) async {
     var model = await _service.traerPlanes(desde, hasta);
     return model;
+  }
+
+  Future<void> getPlanDiaLocal() async {
+    var jsonClientes = await _storage.read(key: "plandeldia");
+    if (jsonClientes != null) {
+      var result = json.decode(jsonClientes) as dynamic;
+      lista = PaginationPlanModel.fromJson(result);
+      _planSemanalController.add(lista);
+    } else {
+      _planSemanalController.add(lista);
+    }
+  }
+
+  Future<void> guardarPlanesDelDia() async {
+    await _storage.write(
+        key: "plandeldia",
+        value: lista != null ? jsonEncode(lista.toJson()) : null);
   }
 
   @override

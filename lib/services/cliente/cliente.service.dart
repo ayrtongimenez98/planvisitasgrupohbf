@@ -18,10 +18,10 @@ class ClienteService {
         var result = json.decode(response.body) as dynamic;
         return PaginationClienteModel.fromJson(result);
       } else {
-        return null;
+        return PaginationClienteModel(CantidadTotal: 0, Listado: []);
       }
     } catch (error) {
-      return null;
+      return PaginationClienteModel(CantidadTotal: 0, Listado: []);
     }
   }
 }

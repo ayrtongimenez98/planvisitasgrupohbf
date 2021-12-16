@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
+import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:planvisitas_grupohbf/screens/dashboard.dart';
 import 'package:planvisitas_grupohbf/screens/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -14,22 +18,19 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> {
-  SessionBloc _sessionBloc;
-
   @override
   void initState() {
     super.initState();
-    _sessionBloc = BlocProvider.of<GlobalBloc>(context).sessionBloc;
 
-    Connectivity().checkConnectivity().then((connectionResult) {
-      if (connectionResult == ConnectivityResult.mobile ||
-          connectionResult == ConnectivityResult.wifi) {
-        _sessionBloc.validateSession().then((value) {
-          onDoneLoading(value);
-        });
+    SharedPreferences.getInstance().then((prefs) {
+      var session = prefs.getString('session');
+      SessionInfo info;
+      if (session != null) {
+        info = SessionInfo.fromJson(json.decode(session));
       } else {
-        onDoneLoading(true);
+        info = defaultSession;
       }
+      onDoneLoading(info.Usuario_Id != 0);
     });
   }
 

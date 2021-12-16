@@ -2,10 +2,14 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
+import 'package:planvisitas_grupohbf/models/visitas/visita-model.dart';
+import 'package:planvisitas_grupohbf/models/visitas/visita-upsert-model.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/detalleVisitaMarcada.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/detalleVisitaPorMarcar.dart';
+import 'package:planvisitas_grupohbf/services/visitas/visitas.service.dart';
 
 class VisitasMarcadasPage extends StatefulWidget {
   @override
@@ -16,30 +20,21 @@ class VisitasMarcadasPage extends StatefulWidget {
 
 class _VisitasMarcadasPageState extends State<VisitasMarcadasPage>
     with WidgetsBindingObserver {
-  List<PlanSemanal> planes = [];
+  VisitasService visitasService;
 
-  bool refresh = true;
-
-  bool activeOrder = false;
-  bool _isConnected = false;
-  ConnectivityResult _connectivityResult = ConnectivityResult.none;
-
+  List<VisitaModel> _visitas = [];
+  bool loading = false;
   @override
   void initState() {
-    super.initState();
-
-    Connectivity().onConnectivityChanged.listen((connectionResult) {
-      _isConnected = connectionResult != ConnectivityResult.none;
-      if ((_connectivityResult == ConnectivityResult.wifi ||
-              _connectivityResult == ConnectivityResult.mobile) &&
-          (connectionResult == ConnectivityResult.wifi ||
-              connectionResult == ConnectivityResult.mobile)) {
-        _connectivityResult = connectionResult;
-        return;
-      }
-
-      _connectivityResult = connectionResult;
+    loading = true;
+    visitasService = VisitasService();
+    visitasService.traerVisitasDelDia().then((value) {
+      setState(() {
+        _visitas = value.Listado;
+        loading = false;
+      });
     });
+    super.initState();
   }
 
   @override
@@ -77,114 +72,175 @@ class _VisitasMarcadasPageState extends State<VisitasMarcadasPage>
     );
   }
 
-  Color renderHubStateColor() {
-    return Colors.green;
-  }
-
-  Widget renderHubState() {
-    return Text("Conectado");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(children: [
-        Container(
-          height: 30,
-          width: MediaQuery.of(context).size.width,
-          child: Padding(
-              child: Row(children: [
-                Icon(
-                  Icons.radio_button_checked,
-                  color: renderHubStateColor(),
-                  size: 15,
-                ),
-                renderHubState()
-              ]),
-              padding: EdgeInsets.only(top: 10, left: 10)),
-        ),
-        Divider(color: Colors.grey, height: 1),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(8),
-            itemCount: 2,
-            itemBuilder: (_, index) {
-              return Card(
-                borderOnForeground: true,
-                clipBehavior: Clip.hardEdge,
-                color: Colors.white,
-                child: Container(
-                  width: double.maxFinite,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.all(15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text("27/10/2021", style: TextStyle(fontSize: 20)),
-                            Text("10:08", style: TextStyle(fontSize: 20))
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(left: 15, bottom: 15),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.map),
-                            Flexible(
-                              child: Padding(
-                                child: Text("Avenida Caaguazu c/ Calle Colon"),
-                                padding: EdgeInsets.only(left: 10),
+      body: loading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF74CCBB),
+              ),
+            )
+          : Column(children: [
+              Divider(color: Colors.grey, height: 1),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: _visitas.length,
+                  itemBuilder: (_, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        if (!_visitas[index]
+                                .Visita_Ubicacion_Salida
+                                ?.trim()
+                                ?.isEmpty ??
+                            true) {
+                        } else {
+                          var plan = new VisitaUpsertModel(
+                              Ciudad: _visitas[index].Ciudad,
+                              Cliente: _visitas[index].Cliente,
+                              Cliente_Cod: _visitas[index].CodCliente,
+                              Direccion: _visitas[index].Direccion,
+                              Estado_Id: 1,
+                              Motivo_Id: 1,
+                              Sucursal_Id: _visitas[index].Sucursal_Id,
+                              Vendedor_Id: 0,
+                              Visita_fecha: _visitas[index].Visita_fecha,
+                              Visita_Hora_Entrada: new DateTime.now(),
+                              Visita_Hora_Salida: new DateTime.now(),
+                              Visita_Id: _visitas[index].Visita_Id,
+                              Visita_Observacion: "",
+                              Visita_Ubicacion_Entrada:
+                                  _visitas[index].Visita_Ubicacion_Entrada,
+                              Visita_Ubicacion_Salida: "");
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => VisitaMarcadaViewPage(
+                                    VisitaMarcada: plan,
+                                    VisitaMarcadaId: plan.Visita_Id,
+                                  )));
+                        }
+                      },
+                      child: Card(
+                        borderOnForeground: true,
+                        clipBehavior: Clip.hardEdge,
+                        color: Colors.white,
+                        child: Container(
+                          width: double.maxFinite,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.all(15),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Text(
+                                        "${new DateFormat('dd/MM/yyyy').format(_visitas[index].Visita_fecha.toLocal())}",
+                                        style: TextStyle(fontSize: 20)),
+                                    Text(
+                                        "${_visitas[index].Visita_Hora_Entrada}",
+                                        style: TextStyle(fontSize: 20))
+                                  ],
+                                ),
                               ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(left: 15),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.format_list_bulleted),
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                              child: Text('BIGGIE EXPRESS'),
-                            )
-                          ],
-                        ),
-                      ),
-                      ButtonBar(
-                        alignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          FlatButton(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Icon(Icons.info_outline),
-                                Text("  Info")
-                              ],
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => VisitaMarcadaViewPage(
-                                        VisitaMarcada: PlanSemanal(),
-                                        VisitaMarcadaId: 0,
-                                      )));
-                            },
-                            color: Colors.white,
-                            textColor: Colors.black,
+                              Container(
+                                padding: EdgeInsets.only(left: 15, bottom: 15),
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.map),
+                                    Flexible(
+                                      child: Padding(
+                                        child: Text(_visitas[index].Direccion),
+                                        padding: EdgeInsets.only(left: 10),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.only(left: 15),
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.format_list_bulleted),
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                      child: Text(_visitas[index].Cliente),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                child: !_visitas[index]
+                                            .Visita_Ubicacion_Salida
+                                            ?.trim()
+                                            ?.isEmpty ??
+                                        true
+                                    ? Text("")
+                                    : ButtonBar(
+                                        alignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          FlatButton(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Icon(Icons.location_on),
+                                                Text("  Marcar salida")
+                                              ],
+                                            ),
+                                            onPressed: () {
+                                              var plan = new VisitaUpsertModel(
+                                                  Ciudad:
+                                                      _visitas[index].Ciudad,
+                                                  Cliente:
+                                                      _visitas[index].Cliente,
+                                                  Cliente_Cod: _visitas[index]
+                                                      .CodCliente,
+                                                  Direccion:
+                                                      _visitas[index].Direccion,
+                                                  Estado_Id: 1,
+                                                  Motivo_Id: 1,
+                                                  Sucursal_Id: _visitas[index]
+                                                      .Sucursal_Id,
+                                                  Vendedor_Id: 0,
+                                                  Visita_fecha: _visitas[index]
+                                                      .Visita_fecha,
+                                                  Visita_Hora_Entrada:
+                                                      new DateTime.now(),
+                                                  Visita_Hora_Salida:
+                                                      new DateTime.now(),
+                                                  Visita_Id:
+                                                      _visitas[index].Visita_Id,
+                                                  Visita_Observacion: "",
+                                                  Visita_Ubicacion_Entrada: "",
+                                                  Visita_Ubicacion_Salida: "");
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          VisitaMarcadaViewPage(
+                                                            VisitaMarcada: plan,
+                                                            VisitaMarcadaId:
+                                                                plan.Visita_Id,
+                                                          )));
+                                            },
+                                            color: Colors.white,
+                                            textColor: Colors.black,
+                                          ),
+                                        ],
+                                      ),
+                              )
+                            ],
                           ),
-                        ],
-                      )
-                    ],
-                  ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ]),
+              ),
+            ]),
     );
   }
 }

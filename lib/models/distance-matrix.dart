@@ -3,7 +3,14 @@ class Distance {
   int value;
   Distance({this.text, this.value});
   factory Distance.fromJson(dynamic json) {
-    return Distance(text: json['text'] as String, value: json['value'] as int);
+    var dist = new Distance();
+    try {
+      dist = new Distance(
+          text: json['text'] as String, value: json['value'] as int);
+    } catch (e) {
+      dist = new Distance(text: null, value: null);
+    }
+    return dist;
   }
 }
 
@@ -12,7 +19,13 @@ class Duration {
   int value;
   Duration({this.text, this.value});
   factory Duration.fromJson(dynamic json) {
-    return Duration(text: json['text'] as String, value: json['value'] as int);
+    var dur = new Duration();
+    try {
+      dur = Duration(text: json['text'] as String, value: json['value'] as int);
+    } catch (e) {
+      dur = new Duration(text: "", value: 0);
+    }
+    return dur;
   }
 }
 

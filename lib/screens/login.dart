@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
+import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:planvisitas_grupohbf/screens/dashboard.dart';
 import 'package:planvisitas_grupohbf/utilities/constants.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -18,10 +21,24 @@ class _LoginScreenState extends State<LoginScreen> {
   final myControllerPass = TextEditingController();
   bool passwordVisible = false;
   SessionBloc _sessionBloc;
+  final _storage = const FlutterSecureStorage();
+  bool loading = false;
   @override
   void initState() {
     super.initState();
     _sessionBloc = BlocProvider.of<GlobalBloc>(context).sessionBloc;
+
+    _storage.read(key: "session").then((value) {
+      loading = false;
+      if (value != null) {
+        var info = SessionInfo.fromJson(json.decode(value));
+        if (info.Id != null && info.Id != "") {
+          _sessionBloc.getUser(info: info);
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => Dashboard()));
+        }
+      }
+    });
     passwordVisible = false;
   }
 
@@ -72,6 +89,31 @@ class _LoginScreenState extends State<LoginScreen> {
           style: const TextStyle(
             color: Colors.white,
           ),
+          onFieldSubmitted: (t) async {
+            if (loading) {
+            } else {
+              setState(() {
+                loading = true;
+              });
+              var user = myControllerUser.text;
+              var pass = myControllerPass.text;
+              var resultado = await _sessionBloc.login(user, pass);
+              if (resultado) {
+                setState(() {
+                  loading = false;
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => Dashboard()));
+                });
+              } else {
+                setState(() {
+                  loading = false;
+                  final snackBar =
+                      SnackBar(content: Text('Credenciales inválidas.'));
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                });
+              }
+            }
+          },
           obscureText: !passwordVisible,
           decoration: InputDecoration(
             border: const UnderlineInputBorder(),
@@ -125,36 +167,53 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
             child: FlatButton(
       onPressed: () async {
-        var user = myControllerUser.text;
-        var pass = myControllerPass.text;
-        var resultado = await _sessionBloc.login(user, pass);
-        if (resultado) {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Dashboard()));
-        } else {}
+        if (loading) {
+        } else {
+          setState(() {
+            loading = true;
+          });
+          var user = myControllerUser.text;
+          var pass = myControllerPass.text;
+          var resultado = await _sessionBloc.login(user, pass);
+          if (resultado) {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => Dashboard()));
+          } else {
+            setState(() {
+              loading = false;
+              final snackBar =
+                  SnackBar(content: Text('Credenciales inválidas.'));
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            });
+          }
+        }
       },
       padding: EdgeInsets.all(16),
       color: Color(0xFF8C44C0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const <Widget>[
-          Text(
-            'INGRESAR',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
+      child: loading
+          ? CircularProgressIndicator(
+              color: Color(0xFF74CCBB),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const <Widget>[
+                Text(
+                  'INGRESAR',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward,
+                  size: 25,
+                  color: Colors.white,
+                ),
+              ],
             ),
-          ),
-          Icon(
-            Icons.arrow_forward,
-            size: 25,
-            color: Colors.white,
-          ),
-        ],
-      ),
     )));
   }
 
