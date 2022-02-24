@@ -54,8 +54,7 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     _planSemanalBloc.getPlanDiaLocal();
     planSemanalSubscription = _planSemanalBloc.planStream.listen((data) async {
       setState(() {
-        planes =
-            data.Listado.where((element) => element.Estado == "N").toList();
+        planes = data.Listado;
         loading = false;
       });
     });
@@ -97,7 +96,6 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
     Widget okButton = FlatButton(
       child: Text("OK"),
       onPressed: () {
-        Navigator.of(context).pop();
         Navigator.of(context).pop();
         Navigator.of(context).pop();
       },
@@ -229,7 +227,7 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.only(left: 15),
+                              padding: EdgeInsets.only(left: 15, bottom: 15),
                               child: Row(
                                 children: <Widget>[
                                   Icon(Icons.format_list_bulleted),
@@ -237,6 +235,21 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                                     padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                                     child: Text(
                                         "${planes[index].Cliente_RazonSocial}"),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.only(left: 15),
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(planes[index].Estado == 'N'
+                                      ? Icons.clear
+                                      : Icons.check),
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                    child: Text(
+                                        "${planes[index].Estado == 'N' ? 'Sin marcar' : 'Marcado'}"),
                                   )
                                 ],
                               ),
@@ -254,71 +267,45 @@ class _VisitasAMarcarPageState extends State<VisitasAMarcarPage>
                                     ],
                                   ),
                                   onPressed: () {
-                                    var visita = new VisitaUpsertModel(
-                                        Ciudad: planes[index].SucursalCiudad,
-                                        Cliente:
-                                            planes[index].Cliente_RazonSocial,
-                                        Cliente_Cod: planes[index].Cliente_Cod,
-                                        Direccion:
-                                            planes[index].SucursalDireccion,
-                                        Estado_Id: 1,
-                                        Motivo_Id: 1,
-                                        Sucursal_Id: planes[index].SucursalId,
-                                        Vendedor_Id: 0,
-                                        Visita_fecha: new DateTime.now(),
-                                        Visita_Hora_Entrada: new DateTime.now(),
-                                        Visita_Hora_Salida: new DateTime.now(),
-                                        Visita_Id: 0,
-                                        Visita_Observacion: "",
-                                        Visita_Ubicacion_Entrada: _locationData !=
-                                                null
-                                            ? "${_locationData.latitude},${_locationData.longitude}"
-                                            : "",
-                                        Visita_Ubicacion_Salida: "");
-                                    showAlertDialog(context, visita);
+                                    if (planes[index].Estado == 'N') {
+                                      var plan = new VisitaUpsertModel(
+                                          Ciudad: planes[index].SucursalCiudad,
+                                          Cliente:
+                                              planes[index].Cliente_RazonSocial,
+                                          Cliente_Cod:
+                                              planes[index].Cliente_Cod,
+                                          Direccion:
+                                              planes[index].SucursalDireccion,
+                                          Estado_Id: 1,
+                                          Motivo_Id: 1,
+                                          Sucursal_Id: planes[index].SucursalId,
+                                          Vendedor_Id: 0,
+                                          Visita_fecha: new DateTime.now(),
+                                          Visita_Hora_Entrada:
+                                              new DateTime.now(),
+                                          Visita_Hora_Salida:
+                                              new DateTime.now(),
+                                          Visita_Id: 0,
+                                          Visita_Observacion: "",
+                                          Visita_Ubicacion_Entrada:
+                                              _locationData != null
+                                                  ? "${_locationData.latitude},${_locationData.longitude}"
+                                                  : "",
+                                          Visita_Ubicacion_Salida: "");
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VisitasAMarcarViewPage(
+                                                    visitasAMarcar: plan,
+                                                    visitasAMarcarId:
+                                                        plan.Visita_Id,
+                                                  )));
+                                    } else {}
                                   },
                                   color: Colors.white,
-                                  textColor: Color(0xFF8C44C0),
-                                ),
-                                FlatButton(
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Icon(Icons.info),
-                                      Text("  Datos")
-                                    ],
-                                  ),
-                                  onPressed: () {
-                                    var plan = new VisitaUpsertModel(
-                                        Ciudad: planes[index].SucursalCiudad,
-                                        Cliente:
-                                            planes[index].Cliente_RazonSocial,
-                                        Cliente_Cod: planes[index].Cliente_Cod,
-                                        Direccion:
-                                            planes[index].SucursalDireccion,
-                                        Estado_Id: 1,
-                                        Motivo_Id: 1,
-                                        Sucursal_Id: planes[index].SucursalId,
-                                        Vendedor_Id: 0,
-                                        Visita_fecha: new DateTime.now(),
-                                        Visita_Hora_Entrada: new DateTime.now(),
-                                        Visita_Hora_Salida: new DateTime.now(),
-                                        Visita_Id: 0,
-                                        Visita_Observacion: "",
-                                        Visita_Ubicacion_Entrada: "",
-                                        Visita_Ubicacion_Salida: "");
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                VisitasAMarcarViewPage(
-                                                  visitasAMarcar: plan,
-                                                  visitasAMarcarId:
-                                                      plan.Visita_Id,
-                                                )));
-                                  },
-                                  color: Colors.white,
-                                  textColor: Colors.black,
+                                  textColor: planes[index].Estado == 'N'
+                                      ? Color(0xFF8C44C0)
+                                      : Colors.grey,
                                 ),
                               ],
                             )

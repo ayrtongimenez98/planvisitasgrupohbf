@@ -1,4 +1,5 @@
 import 'package:planvisitas_grupohbf/models/cliente/cliente-model.dart';
+import 'package:planvisitas_grupohbf/models/estadisticas/estadistica.model.dart';
 import 'package:planvisitas_grupohbf/models/estado-motivo-visita/estado-motivo-model.dart';
 import 'package:planvisitas_grupohbf/models/objetivovisita/objetivovisita-model.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
@@ -115,6 +116,21 @@ class PaginationObjetivoVisitaModel {
       'CantidadTotal': CantidadTotal,
       'Listado': Listado.map((x) => x.toJson()).toList(),
     };
+  }
+}
+
+class PaginationEstadisticaModel {
+  final int CantidadTotal;
+  final List<EstadisticaModel> Listado;
+
+  PaginationEstadisticaModel({this.CantidadTotal, this.Listado});
+
+  factory PaginationEstadisticaModel.fromJson(Map<String, dynamic> json) {
+    var items = json["Listado"] as List<dynamic>;
+
+    return PaginationEstadisticaModel(
+        CantidadTotal: json["CantidadTotal"] as int,
+        Listado: items.map((e) => EstadisticaModel.fromJson(e)).toList());
   }
 }
 

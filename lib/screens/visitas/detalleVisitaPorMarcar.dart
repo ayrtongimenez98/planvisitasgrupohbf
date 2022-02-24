@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/visitas-offline-bloc/visitas-offline.bloc.dart';
@@ -45,10 +46,13 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
   StreamSubscription connectivitySubscription;
   var connectivity = false;
   VisitasOfflineBloc visitasOfflineBloc;
+  PlanSemanalBloc _planSemanalBloc;
+
   @override
   void initState() {
     super.initState();
     visitasService = VisitasService();
+    _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
     location.hasPermission().then((value) => _permissionGranted = value);
     getLocation();
     visitasOfflineBloc =
@@ -78,7 +82,6 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
       _locationData = value;
       LatLng destination = LatLng(-25.3794133, -57.5541792);
       LatLng origen = LatLng(_locationData.latitude, _locationData.longitude);
-      
     });
   }
 
@@ -86,10 +89,7 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
     Widget okButton = FlatButton(
       child: Text("OK"),
       onPressed: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
+        Navigator.of(context).popUntil((route) => route.isFirst);
       },
     );
 
@@ -126,6 +126,7 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
           if (connectivity) {
             visitasService.agregarEntrada(model).then((value) async {
               pr.hide();
+              _planSemanalBloc.getPlanDiaServidor();
               showNoticeDialog(context, value);
             });
           } else {
@@ -169,8 +170,6 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
     super.dispose();
   }
 
-  void guardar() async {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,7 +177,7 @@ class _VisitasAMarcarViewPageState extends State<VisitasAMarcarViewPage> {
         appBar: AppBar(
           actions: <Widget>[
             IconButton(
-              icon: const Icon(Icons.save),
+              icon: const Icon(Icons.send),
               onPressed: () {
                 widget.visitasAMarcar.Visita_Ubicacion_Entrada =
                     "${_locationData.latitude},${_locationData.longitude}";

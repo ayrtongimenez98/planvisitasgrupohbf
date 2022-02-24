@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/cliente/cliente-model.dart';
 import 'package:planvisitas_grupohbf/models/distance-matrix.dart';
 import 'package:planvisitas_grupohbf/models/objetivovisita/objetivovisita-model.dart';
@@ -37,12 +40,14 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
 
   ObjetivoVisitaService objetivoService;
   HojaRutaService hojaRutaService;
+  PlanSemanalBloc _planSemanalBloc;
 
   bool loading = false;
 
   @override
   void initState() {
     loading = true;
+    _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
     widget.visitas.forEach((element) {
       var textEditingController = TextEditingController(text: element.Hora);
       textEditingControllers.add(textEditingController);
@@ -64,7 +69,7 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
     Widget okButton = FlatButton(
       child: Text("OK"),
       onPressed: () {
-        Navigator.of(context).pop();
+        Navigator.of(context).popUntil((route) => route.isFirst);
       },
     );
 
@@ -96,6 +101,7 @@ class _EnviarPlanPageState extends State<EnviarPlanPage> {
     pr.show();
     hojaRutaService.agregarPlanes(widget.visitas).then((value) async {
       pr.hide();
+      _planSemanalBloc.getPlanDiaServidor();
       showAlertDialog(context, value);
     });
   }

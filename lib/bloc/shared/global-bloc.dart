@@ -4,6 +4,7 @@ import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.da
 import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
 
 import 'package:planvisitas_grupohbf/bloc/shared/bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/visitas-bloc/visitas.bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/visitas-offline-bloc/visitas-offline.bloc.dart';
 
 class GlobalBloc implements Bloc {
@@ -12,6 +13,7 @@ class GlobalBloc implements Bloc {
   ClientesBloc clientesBloc;
   EstadoMotivoBloc estadoMotivoBloc;
   VisitasOfflineBloc visitasOfflineBloc;
+  VisitasBloc visitasBloc;
 
   GlobalBloc() {
     visitasOfflineBloc = VisitasOfflineBloc();
@@ -19,6 +21,7 @@ class GlobalBloc implements Bloc {
     clientesBloc = ClientesBloc();
     sessionBloc = SessionBloc();
     planSemanalBloc = PlanSemanalBloc();
+    visitasBloc = VisitasBloc();
   }
 
   void dispose() {
@@ -27,5 +30,6 @@ class GlobalBloc implements Bloc {
     clientesBloc.dispose();
     sessionBloc.dispose();
     planSemanalBloc.dispose();
+    visitasBloc.dispose();
   }
 }

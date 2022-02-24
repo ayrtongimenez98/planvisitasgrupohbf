@@ -4,33 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="62ce0c4d-eeb8-4855-9879-0dbc398ef0fd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.flutter-plugins" beforeDir="false" afterPath="$PROJECT_DIR$/.flutter-plugins" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/.flutter-plugins-dependencies" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable-v21/launch_background.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable-v21/launch_background.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/res/drawable/launch_background.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/res/drawable/launch_background.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/bloc/session-bloc/session-bloc.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/bloc/session-bloc/session-bloc.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/config/config.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/config/config.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/generated_plugin_registrant.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/generated_plugin_registrant.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/models/pagination-model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/pagination-model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/clientes/listaClientes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/clientes/listaClientes.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/plansemanal/agregar-nuevo-plan.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/plansemanal/agregar-nuevo-plan.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/plansemanal/enviar-plan-semanal.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/plansemanal/enviar-plan-semanal.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/plansemanal/plan_semanal.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/plansemanal/plan_semanal.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/visitas/detalleVisitaMarcada.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/visitas/detalleVisitaMarcada.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/visitas/detalleVisitaPorMarcar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/visitas/detalleVisitaPorMarcar.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/visitas/visitasMarcadas.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/visitas/visitasMarcadas.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/screens/visitas/visitasPorMarcar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screens/visitas/visitasPorMarcar.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/hoja-de-ruta/hoja-de-ruta.service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/hoja-de-ruta/hoja-de-ruta.service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/storage/secure_storage_helper.service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/storage/secure_storage_helper.service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/sidenav/sidenav.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/sidenav/sidenav.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/splash/splash.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/splash/splash.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-    </list>
+    <list default="true" id="62ce0c4d-eeb8-4855-9879-0dbc398ef0fd" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

@@ -8,6 +8,7 @@ import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/session-info.dart';
 import 'package:planvisitas_grupohbf/screens/clientes/listaClientes.dart';
+import 'package:planvisitas_grupohbf/screens/estadisticas/estadistica.dart';
 import 'package:planvisitas_grupohbf/screens/login.dart';
 import 'package:planvisitas_grupohbf/screens/plansemanal/plan_semanal.dart';
 import 'package:planvisitas_grupohbf/screens/sync/sincronizar-datos.dart';
@@ -93,7 +94,10 @@ class _SideMenuState extends State<SideMenu> {
                 ListTile(
                   leading: Icon(Icons.assessment),
                   title: Text("Estadisticas"),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => EstadisticaPage()));
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.sync),
@@ -139,7 +143,7 @@ class _SideMenuState extends State<SideMenu> {
                           child: Align(
                             alignment: Alignment.bottomLeft,
                             child: Text(
-                              ' v0.0.1-dev',
+                              ' v2.0.1',
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),

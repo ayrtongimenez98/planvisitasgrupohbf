@@ -3,7 +3,9 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/visitas-bloc/visitas.bloc.dart';
 import 'package:planvisitas_grupohbf/models/plan_semanal/plan_semanal.dart';
 import 'package:planvisitas_grupohbf/models/visitas/visita-model.dart';
 import 'package:planvisitas_grupohbf/models/visitas/visita-upsert-model.dart';
@@ -21,16 +23,19 @@ class VisitasMarcadasPage extends StatefulWidget {
 class _VisitasMarcadasPageState extends State<VisitasMarcadasPage>
     with WidgetsBindingObserver {
   VisitasService visitasService;
-
+  VisitasBloc _visitasBloc;
   List<VisitaModel> _visitas = [];
   bool loading = false;
+  StreamSubscription visitasSubscription;
   @override
   void initState() {
+    _visitasBloc = BlocProvider.of<GlobalBloc>(context).visitasBloc;
     loading = true;
     visitasService = VisitasService();
-    visitasService.traerVisitasDelDia().then((value) {
+    _visitasBloc.getVisitasServidor();
+    visitasSubscription = _visitasBloc.Visitastream.listen((data) async {
       setState(() {
-        _visitas = value.Listado;
+        _visitas = data.Listado;
         loading = false;
       });
     });

@@ -86,14 +86,20 @@ class _ListaVisitasPageState extends State<ListaVisitasPage> {
   }
 
   void _onRefresh() async {
+    index = 0;
+    total = 0;
+    take = 10;
     // monitor network fetch
-    service.traerVisitas(selectedDateDesde, selectedDateHasta).then((value) => {
-          setState(() {
-            total = value.CantidadTotal;
-            _planes = value;
-            _refreshController.refreshCompleted();
-          })
-        });
+    service
+        .traerVisitas(selectedDateDesde, selectedDateHasta,
+            filtro: searchQuery, skip: 0, take: 10)
+        .then((value) => {
+              setState(() {
+                total = value.CantidadTotal;
+                _planes = value;
+                _refreshController.refreshCompleted();
+              })
+            });
 
     // if failed,use refreshFailed()
   }
@@ -102,10 +108,10 @@ class _ListaVisitasPageState extends State<ListaVisitasPage> {
     if ((index + 1) * take < total) {
       index++;
       service
-          .traerVisitas(selectedDateDesde, selectedDateHasta)
+          .traerVisitas(selectedDateDesde, selectedDateHasta,
+              filtro: searchQuery, skip: 0, take: take * (index + 1))
           .then((value) => {
                 setState(() {
-                  total = value.CantidadTotal;
                   _planes = value;
                   _refreshController.loadComplete();
                 })

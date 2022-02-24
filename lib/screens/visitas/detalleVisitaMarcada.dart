@@ -11,6 +11,7 @@ import 'package:maps_launcher/maps_launcher.dart';
 import 'package:planvisitas_grupohbf/bloc/datos-menores-bloc/estado-motivo.bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/visitas-bloc/visitas.bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/visitas-offline-bloc/visitas-offline.bloc.dart';
 import 'package:planvisitas_grupohbf/models/distance-matrix.dart';
 import 'package:planvisitas_grupohbf/models/estado-motivo-visita/estado-motivo-model.dart';
@@ -33,7 +34,7 @@ class VisitaMarcadaViewPage extends StatefulWidget {
 
 class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
   Location location = new Location();
-
+  VisitasBloc _visitasBloc;
   GoogleMapsServices _googleMapsServices = GoogleMapsServices();
   final Set<Polyline> _polyLines = {};
   Set<Polyline> get polyLines => _polyLines;
@@ -63,6 +64,7 @@ class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
     super.initState();
     visitasService = VisitasService();
     estadoMotivoService = EstadoMotivoService();
+    _visitasBloc = BlocProvider.of<GlobalBloc>(context).visitasBloc;
     getLocation();
 
     _estadoMotivoBloc = BlocProvider.of<GlobalBloc>(context).estadoMotivoBloc;
@@ -125,10 +127,7 @@ class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
     Widget okButton = FlatButton(
       child: Text("OK"),
       onPressed: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
+        Navigator.of(context).popUntil((route) => route.isFirst);
       },
     );
 
@@ -164,6 +163,7 @@ class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
         pr.show();
         if (connectivity) {
           visitasService.agregarSalida(model).then((value) async {
+            _visitasBloc.getVisitasServidor();
             pr.hide();
             showNoticeDialog(context, value);
           });
@@ -218,10 +218,12 @@ class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
         appBar: AppBar(
           actions: <Widget>[
             IconButton(
-              icon: const Icon(Icons.save),
+              icon: const Icon(Icons.send),
               onPressed: () {
                 try {
                   if (_locationData != null) {
+                    widget.VisitaMarcada.Visita_Ubicacion_Entrada =
+                        "${_locationData.latitude},${_locationData.longitude}";
                     widget.VisitaMarcada.Visita_Ubicacion_Salida =
                         "${_locationData.latitude},${_locationData.longitude}";
                     widget.VisitaMarcada.Visita_Hora_Salida = DateTime.now();
@@ -235,6 +237,8 @@ class _VisitaMarcadaViewPageState extends State<VisitaMarcadaViewPage> {
                         location.getLocation().then((value) async {
                           setState(() {
                             _locationData = value;
+                            widget.VisitaMarcada.Visita_Ubicacion_Entrada =
+                                "${_locationData.latitude},${_locationData.longitude}";
                             widget.VisitaMarcada.Visita_Ubicacion_Salida =
                                 "${_locationData.latitude},${_locationData.longitude}";
                             widget.VisitaMarcada.Visita_Hora_Salida =

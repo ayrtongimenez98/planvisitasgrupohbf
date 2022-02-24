@@ -262,7 +262,7 @@ class _AgregarVencimientoPageState extends State<AgregarVencimientoPage> {
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Color(0xFF74CCBB),
-          child: Icon(Icons.save),
+          child: Icon(Icons.send),
           onPressed: () {
             final ProgressDialog pr = ProgressDialog(context);
             pr.show();

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:planvisitas_grupohbf/bloc/hoja-de-ruta-bloc/hoja-de-ruta-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
+import 'package:planvisitas_grupohbf/bloc/visitas-bloc/visitas.bloc.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadas.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasMarcadasOffline.dart';
 import 'package:planvisitas_grupohbf/screens/visitas/visitasPorMarcar.dart';
@@ -16,12 +17,14 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   bool _rememberMe = false;
   PlanSemanalBloc _planSemanalBloc;
+  VisitasBloc _visitasBloc;
   bool passwordVisible = false;
 
   @override
   void initState() {
     super.initState();
     _planSemanalBloc = BlocProvider.of<GlobalBloc>(context).planSemanalBloc;
+    _visitasBloc = BlocProvider.of<GlobalBloc>(context).visitasBloc;
     passwordVisible = false;
   }
 
@@ -39,6 +42,7 @@ class _DashboardState extends State<Dashboard> {
                 icon: const Icon(Icons.sync),
                 onPressed: () async {
                   await _planSemanalBloc.getPlanDiaServidor();
+                  await _visitasBloc.getVisitasServidor();
                 },
               )
             ],
