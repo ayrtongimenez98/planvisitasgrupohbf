@@ -7,6 +7,7 @@ import 'package:planvisitas_grupohbf/bloc/session-bloc/session-bloc.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/bloc-provider.dart';
 import 'package:planvisitas_grupohbf/bloc/shared/global-bloc.dart';
 import 'package:planvisitas_grupohbf/models/session-info.dart';
+import 'package:planvisitas_grupohbf/screens/acciones_competencia/lista_acciones.dart';
 import 'package:planvisitas_grupohbf/screens/clientes/listaClientes.dart';
 import 'package:planvisitas_grupohbf/screens/estadisticas/estadistica.dart';
 import 'package:planvisitas_grupohbf/screens/login.dart';
@@ -113,6 +114,14 @@ class _SideMenuState extends State<SideMenu> {
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => ListaVencimientosPage()));
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.texture),
+                  title: Text("Acciones Competencia"),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ListaAccionesPage()));
                   },
                 ),
                 ListTile(

@@ -181,11 +181,8 @@ class _ListaClientesState extends State<ListaClientes> {
         setState(() {
           if (text.length > 0) {
             listaFiltrada = listaFiltrada
-                .where((element) =>
-                    element.SucursalDireccion.toLowerCase()
-                        .contains(text.toLowerCase()) ||
-                    element.Cliente_RazonSocial.toLowerCase()
-                        .contains(text.toLowerCase()))
+                .where((element) => element.Cliente_RazonSocial.toLowerCase()
+                    .contains(text.toLowerCase()))
                 .toList();
           } else {
             listaFiltrada = _clientes.Listado;

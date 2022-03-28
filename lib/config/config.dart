@@ -11,6 +11,8 @@ class Config {
   static String estado = "http://servicios.hcgrupo.com:56333/api/vestadovisita";
   static String vencimiento =
       "http://servicios.hcgrupo.com:56333/api/VVencimientoProducto";
+  static String acciones =
+      "http://servicios.hcgrupo.com:56333/api/VAccionesCompetencia";
   static String estadisticaVisita =
       "http://servicios.hcgrupo.com:56333/api/vestadisticas";
 }

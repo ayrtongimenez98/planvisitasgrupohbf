@@ -1,3 +1,4 @@
+import 'package:planvisitas_grupohbf/models/acciones_competencia/acciones.model.dart';
 import 'package:planvisitas_grupohbf/models/cliente/cliente-model.dart';
 import 'package:planvisitas_grupohbf/models/estadisticas/estadistica.model.dart';
 import 'package:planvisitas_grupohbf/models/estado-motivo-visita/estado-motivo-model.dart';
@@ -62,6 +63,29 @@ class PaginationVencimientosModel {
     return PaginationVencimientosModel(
         CantidadTotal: json["CantidadTotal"] as int,
         Listado: items.map((e) => VencimientoModel.fromJson(e)).toList());
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'CantidadTotal': CantidadTotal,
+      'Listado': Listado.map((x) => x.toJson()).toList(),
+    };
+  }
+}
+
+class PaginationAccionesModel {
+  final int CantidadTotal;
+  final List<AccionesCompetenciaModel> Listado;
+
+  PaginationAccionesModel({this.CantidadTotal, this.Listado});
+
+  factory PaginationAccionesModel.fromJson(Map<String, dynamic> json) {
+    var items = json["Listado"] as List<dynamic>;
+
+    return PaginationAccionesModel(
+        CantidadTotal: json["CantidadTotal"] as int,
+        Listado:
+            items.map((e) => AccionesCompetenciaModel.fromJson(e)).toList());
   }
 
   Map<String, dynamic> toJson() {
